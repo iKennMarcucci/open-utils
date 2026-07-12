@@ -18,6 +18,8 @@ import {
   Layers,
   Scissors,
   ShieldCheck,
+  Pencil,
+  Brush,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
@@ -32,6 +34,7 @@ export function Sidebar() {
   const [pdfToolMode, setPdfToolMode] = useState<"pdf-to-img" | "img-to-pdf">("pdf-to-img");
   const [videoToolMode, setVideoToolMode] = useState<"video-to-gif" | "gif-to-video">("video-to-gif");
   const [pdfOrgMode, setPdfOrgMode] = useState<"merge" | "split">("merge");
+  const [editorMode, setEditorMode] = useState<"pdf" | "img">("pdf");
 
   // Tooltip shown when the rail is collapsed. Rendered as a fixed sibling so it
   // escapes the sidebar's `overflow-hidden`. We store only the id + vertical
@@ -75,6 +78,12 @@ export function Sidebar() {
     setPdfOrgMode((prev) => (prev === "merge" ? "split" : "merge"));
   };
 
+  const handleToggleEditorMode = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditorMode((prev) => (prev === "pdf" ? "img" : "pdf"));
+  };
+
   const navItems = [
     {
       id: "dashboard",
@@ -83,6 +92,16 @@ export function Sidebar() {
       href: "/",
       matchPath: "/",
       hasToggle: false,
+    },
+    {
+      id: "editor",
+      name: editorMode === "pdf" ? "Editor PDF" : "Editor IMG",
+      icon: editorMode === "pdf" ? Pencil : Brush,
+      href: editorMode === "pdf" ? "/pdf-editor" : "/image-editor",
+      matchPath: editorMode === "pdf" ? "/pdf-editor" : "/image-editor",
+      hasToggle: true,
+      onToggle: handleToggleEditorMode,
+      isFlipped: editorMode === "img",
     },
     {
       id: "pdf-converter",

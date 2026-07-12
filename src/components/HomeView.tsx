@@ -12,6 +12,8 @@ import {
   ShieldCheck,
   Zap,
   Sparkles,
+  Pencil,
+  Brush,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,16 +32,38 @@ type Tool = {
 
 const TOOLS: Tool[] = [
   {
-    id: "pdf-converter",
-    title: "PDF ⇄ IMG",
+    id: "pdf-editor",
+    title: "Editor de PDF",
     description:
-      "Convierte PDFs a imágenes de alta calidad o transforma varias imágenes en un único documento. Todo el procesamiento ocurre en tu navegador.",
-    href: "/pdf-converter",
-    icon: FileText,
+      "Dibuja, resalta, escribe, agrega formas, flechas e imágenes sobre tus PDFs. Rota, reordena y elimina páginas — como Adobe o Edge, pero 100% en tu navegador.",
+    href: "/pdf-editor",
+    icon: Pencil,
     category: "Documentos",
     accent: "var(--ds-blue-text)",
     span: "md:col-span-2 md:row-span-2",
     featured: true,
+  },
+  {
+    id: "image-editor",
+    title: "Editor de Imagen",
+    description:
+      "Dibuja a mano, encierra en cuadros de colores, resalta, escribe texto y agrega formas sobre cualquier imagen. Exporta en PNG o JPG.",
+    href: "/image-editor",
+    icon: Brush,
+    category: "Multimedia",
+    accent: "var(--ds-teal-text)",
+    span: "md:col-span-1",
+  },
+  {
+    id: "pdf-converter",
+    title: "PDF ⇄ IMG",
+    description:
+      "Convierte PDFs a imágenes de alta calidad o transforma varias imágenes en un único documento.",
+    href: "/pdf-converter",
+    icon: FileText,
+    category: "Documentos",
+    accent: "var(--ds-blue-text)",
+    span: "md:col-span-1",
   },
   {
     id: "video-converter",
