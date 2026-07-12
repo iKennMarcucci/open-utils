@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Open Utils
 
-## Getting Started
+A collection of fast, **local, and private** browser utilities. Convert, merge and
+transform files without anything ever leaving your device — every tool runs
+entirely in the browser.
 
-First, run the development server:
+## Tools
+
+| Categoría   | Herramienta      | Ruta               |
+| ----------- | ---------------- | ------------------ |
+| Documentos  | PDF ⇄ IMG        | `/pdf-converter`   |
+| Documentos  | Unificador PDF       | `/merge-pdf`       |
+| Documentos  | Separador PDF | `/pdf-splitter`    |
+| Multimedia  | Video ⇄ GIF      | `/video-converter` |
+| Desarrollo  | Formato JSON     | _próximamente_     |
+
+The **Separador PDF** lets you group a PDF's pages into packages and export
+each package as a unified PDF, one PDF per page, or images — bundled into a
+single `.zip` (JSZip, bundled locally).
+
+## Design system
+
+Open Utils uses a design system built on the [Geist Design System](https://vercel.com/geist/introduction)
+(Vercel): monochrome-forward surfaces, a single blue accent, subtle 1px borders,
+tight radii and the Geist typeface. All tokens live in
+[`src/app/globals.css`](src/app/globals.css) and are exposed to Tailwind v4 via
+`@theme inline`, plus shared component primitives (`.ou-card`, `.ou-btn`,
+`.ou-dropzone`, `.ou-label`, `.ou-badge`). The home page arranges the tools as a
+responsive **bento grid** grouped by category, animated with
+[Motion](https://motion.dev) (`motion/react`).
+
+## 100% local — no CDNs
+
+Every runtime asset is served from the same origin, so the app works fully
+offline and nothing ever leaves your device:
+
+- **FFmpeg core** (`@ffmpeg/core`) is copied into `public/ffmpeg/` by
+  [`scripts/copy-ffmpeg.mjs`](scripts/copy-ffmpeg.mjs) (runs on `postinstall` /
+  `predev` / `prebuild`) and loaded from `/ffmpeg`. The 31 MB wasm stays out of
+  git and is regenerated on install.
+- **pdf.js worker** is resolved from the installed `pdfjs-dist` package via
+  `new URL(..., import.meta.url)`, so the bundler emits it as a same-origin
+  asset locked to the installed version.
+- **Geist fonts** are self-hosted by `next/font` at build time — no request to
+  Google Fonts at runtime.
+
+## Getting started
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built with [Next.js](https://nextjs.org) (App Router), React 19, Tailwind CSS v4,
+Motion and lucide-react.

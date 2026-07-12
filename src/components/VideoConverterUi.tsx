@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import {
   RefreshCw, UploadCloud, Video as VideoIcon, Image as ImageIcon,
   Download, X, AlertCircle, Play, Pause, CheckCircle2,
@@ -70,7 +70,7 @@ function StatBar({ value, max = 5, color }: { value: number; max?: number; color
           transition={{ delay: i * 0.04, duration: 0.2 }}
           className={cn(
             "h-1 flex-1 rounded-full origin-left",
-            i < value ? color : "bg-neutral-800"
+            i < value ? color : "bg-surface-strong"
           )}
         />
       ))}
@@ -108,7 +108,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
             exit={{ opacity: 0, y: 30, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 380, damping: 32 }}
             onClick={e => e.stopPropagation()}
-            className="relative w-full max-w-lg bg-[#0f0f0f] border border-white/8 rounded-[28px] overflow-hidden shadow-2xl"
+            className="relative w-full max-w-lg bg-[#0f0f0f] border border-white/8 rounded-panel overflow-hidden shadow-2xl"
           >
             {/* Top gradient accent */}
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
@@ -116,10 +116,10 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
             {/* Header */}
             <div className="px-6 pt-6 pb-4 flex items-start justify-between">
               <div>
-                <p className="text-[11px] font-semibold text-neutral-600 uppercase tracking-[0.15em] mb-1.5">
+                <p className="text-[11px] font-semibold text-foreground-faint uppercase tracking-[0.15em] mb-1.5">
                   Configuración de conversión
                 </p>
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-bold text-foreground">
                   ¿Qué calidad necesitas?
                 </h2>
               </div>
@@ -127,7 +127,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                 onClick={onClose}
                 className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors mt-0.5"
               >
-                <X className="w-4 h-4 text-neutral-400" />
+                <X className="w-4 h-4 text-foreground-muted" />
               </button>
             </div>
 
@@ -143,7 +143,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                     onHoverEnd={() => setHovered(null)}
                     whileTap={{ scale: 0.985 }}
                     className={cn(
-                      "w-full text-left px-4 py-3.5 rounded-2xl border transition-all duration-200 relative overflow-hidden",
+                      "w-full text-left px-4 py-3.5 rounded-panel border transition-all duration-200 relative overflow-hidden",
                       isSelected
                         ? `bg-gradient-to-br ${opt.accent}`
                         : "bg-white/[0.03] border-white/6 hover:bg-white/[0.06] hover:border-white/10"
@@ -153,7 +153,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                       {/* Icon */}
                       <div className={cn(
                         "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors",
-                        isSelected ? "bg-white/10 text-white" : "bg-white/5 text-neutral-500"
+                        isSelected ? "bg-white/10 text-foreground" : "bg-white/5 text-foreground-subtle"
                       )}>
                         {opt.icon}
                       </div>
@@ -163,7 +163,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className={cn(
                             "font-bold text-sm transition-colors",
-                            isSelected ? "text-white" : "text-neutral-300"
+                            isSelected ? "text-foreground" : "text-foreground-muted"
                           )}>
                             {opt.label}
                           </span>
@@ -176,7 +176,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-neutral-500 mt-0.5">{opt.sublabel}</p>
+                        <p className="text-xs text-foreground-subtle mt-0.5">{opt.sublabel}</p>
                       </div>
 
                       {/* Selector */}
@@ -184,7 +184,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                         "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
                         isSelected
                           ? "border-white bg-white"
-                          : "border-neutral-700 bg-transparent"
+                          : "border-border-strong bg-transparent"
                       )}>
                         {isSelected && (
                           <motion.div
@@ -208,9 +208,9 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.15 }}
-                className="mx-4 mt-2 mb-4 bg-white/[0.03] rounded-2xl border border-white/6 px-4 py-3.5"
+                className="mx-4 mt-2 mb-4 bg-white/[0.03] rounded-panel border border-white/6 px-4 py-3.5"
               >
-                <p className="text-xs text-neutral-400 leading-relaxed mb-3">
+                <p className="text-xs text-foreground-muted leading-relaxed mb-3">
                   {active.description}
                 </p>
                 <div className="grid grid-cols-3 gap-3">
@@ -220,7 +220,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                     { label: "Velocidad", value: active.stats.speed, color: "bg-emerald-500" },
                   ].map(s => (
                     <div key={s.label}>
-                      <p className="text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5">{s.label}</p>
+                      <p className="text-[10px] text-foreground-faint uppercase tracking-wider mb-1.5">{s.label}</p>
                       <StatBar value={s.value} color={s.color} />
                     </div>
                   ))}
@@ -253,7 +253,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => onSelect(selected)}
-                className="w-full h-13 bg-white hover:bg-neutral-100 text-black font-bold rounded-2xl flex items-center justify-center gap-2 transition-colors shadow-xl"
+                className="w-full h-13 bg-white hover:bg-neutral-100 text-black font-bold rounded-panel flex items-center justify-center gap-2 transition-colors shadow-xl"
               >
                 Convertir ahora
                 <ChevronRight className="w-4 h-4" />
@@ -401,16 +401,16 @@ export function VideoConverterUi() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-12">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
-            {mode === "video-to-gif" ? "Video to GIF" : "GIF to Video"}
+          <h1 className="text-4xl font-semibold text-foreground mb-2 tracking-tight">
+            {mode === "video-to-gif" ? "Video ⇄ GIF" : "GIF ⇄ Video"}
           </h1>
-          <p className="text-neutral-500 font-medium">Procesa tus videos localmente con privacidad total.</p>
+          <p className="text-foreground-subtle font-medium">Procesa tus videos localmente con privacidad total.</p>
         </motion.div>
         <motion.button
           initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
           whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
           onClick={() => { setMode(prev => prev === "video-to-gif" ? "gif-to-video" : "video-to-gif"); resetState(); }}
-          className="p-2 rounded-full hover:bg-neutral-800/80 transition-colors text-neutral-400 hover:text-white"
+          className="p-2 rounded-full hover:bg-surface-strong/80 transition-colors text-foreground-muted hover:text-foreground"
         >
           <RefreshCw className={cn("w-6 h-6 transition-transform duration-500", mode === "video-to-gif" && "rotate-180")} />
         </motion.button>
@@ -421,9 +421,9 @@ export function VideoConverterUi() {
         <section>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-              {mode === "video-to-gif" ? <VideoIcon className="w-5 h-5 text-white" /> : <ImageIcon className="w-5 h-5 text-white" />}
+              {mode === "video-to-gif" ? <VideoIcon className="w-5 h-5 text-foreground" /> : <ImageIcon className="w-5 h-5 text-foreground" />}
             </div>
-            <h2 className="text-xl font-bold text-white">Entrada</h2>
+            <h2 className="text-xl font-bold text-foreground">Entrada</h2>
           </div>
 
           <AnimatePresence mode="wait">
@@ -436,43 +436,55 @@ export function VideoConverterUi() {
                 onDrop={(e) => { e.preventDefault(); setIsDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
-                  "relative aspect-video rounded-[32px] border-2 border-dashed flex flex-col items-center justify-center gap-6 cursor-pointer transition-all duration-300 overflow-hidden group",
-                  isDragging ? "border-white bg-white/10" : "border-neutral-800 bg-neutral-900/50 hover:bg-neutral-900 hover:border-neutral-700"
+                  "relative aspect-video rounded-hero border-2 border-dashed flex flex-col items-center justify-center gap-6 cursor-pointer transition-all duration-300 overflow-hidden group",
+                  isDragging ? "border-white bg-white/10" : "border-border bg-surface/50 hover:bg-surface hover:border-border-strong"
                 )}
               >
-                <div className="w-20 h-20 rounded-3xl bg-neutral-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <UploadCloud className="w-10 h-10 text-neutral-400 group-hover:text-white transition-colors" />
+                <div className="w-20 h-20 rounded-hero bg-surface-strong flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <UploadCloud className="w-10 h-10 text-foreground-muted group-hover:text-foreground transition-colors" />
                 </div>
                 <div className="text-center">
-                  <p className="text-xl font-bold text-white mb-2">{mode === "video-to-gif" ? "Importa tu Video" : "Importa tu GIF"}</p>
-                  <p className="text-neutral-500 font-medium">Arrastra el archivo o haz clic para explorar</p>
+                  <p className="text-xl font-bold text-foreground mb-2">{mode === "video-to-gif" ? "Importa tu Video" : "Importa tu GIF"}</p>
+                  <p className="text-foreground-subtle font-medium">Arrastra el archivo o haz clic para explorar</p>
                 </div>
                 <input type="file" ref={fileInputRef} onChange={(e) => { const s = e.target.files?.[0]; if (s) handleFile(s); }} accept={mode === "video-to-gif" ? "video/*" : "image/gif"} className="hidden" />
               </motion.div>
             ) : (
-              <motion.div key="preview" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-neutral-900 border border-neutral-800 rounded-[32px] overflow-hidden p-6">
-                <div className="relative aspect-video bg-black rounded-2xl overflow-hidden mb-6 group">
-                  <video ref={videoRef} src={fileUrl!} className="w-full h-full object-contain" onLoadedMetadata={onMetadataLoaded} onTimeUpdate={onTimeUpdate} onEnded={() => setIsPlaying(false)} />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                    <button onClick={togglePlay} className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 transition-transform">
-                      {isPlaying ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current ml-1" />}
-                    </button>
+              <motion.div key="preview" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface border border-border rounded-hero overflow-hidden p-6">
+                {mode === "video-to-gif" ? (
+                  <div className="relative aspect-video bg-black rounded-panel overflow-hidden mb-6 group">
+                    <video ref={videoRef} src={fileUrl!} className="w-full h-full object-contain" onLoadedMetadata={onMetadataLoaded} onTimeUpdate={onTimeUpdate} onEnded={() => setIsPlaying(false)} />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                      <button onClick={togglePlay} className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 transition-transform">
+                        {isPlaying ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current ml-1" />}
+                      </button>
+                    </div>
+                    <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-xs font-mono text-foreground">
+                      {formatTime(currentTime)} / {formatTime(duration)}
+                    </div>
                   </div>
-                  <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-xs font-mono text-white">
-                    {formatTime(currentTime)} / {formatTime(duration)}
+                ) : (
+                  <div className="relative aspect-video bg-black rounded-panel overflow-hidden mb-6 flex items-center justify-center">
+                    {/* A GIF renders as an image, not a <video> element. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={fileUrl!} alt="GIF a convertir" className="w-full h-full object-contain" />
+                    <div className="absolute top-4 left-4 px-2.5 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-[11px] font-semibold uppercase tracking-wider text-foreground">
+                      GIF
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Trimmer */}
+                {/* Trimmer (only for video → GIF; a GIF is converted whole) */}
                 <div className="space-y-8">
+                  {mode === "video-to-gif" && (
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1 space-y-2">
-                      <div className="flex justify-between text-xs font-mono text-neutral-500 uppercase tracking-wider mb-2">
+                      <div className="flex justify-between text-xs font-mono text-foreground-subtle uppercase tracking-wider mb-2">
                         <span>Inicio: {formatTime(startTime)}</span>
                         <span>Fin: {formatTime(endTime)}</span>
                       </div>
                       <div ref={timelineRef} className="relative h-12 flex items-center group/range">
-                        <div className="absolute h-1.5 w-full bg-neutral-800 rounded-full" />
+                        <div className="absolute h-1.5 w-full bg-surface-strong rounded-full" />
                         <div className="absolute h-1.5 bg-white/20 rounded-full" style={{ left: `${(startTime / duration) * 100}%`, right: `${100 - (endTime / duration) * 100}%` }} />
                         <div
                           onPointerDown={(e) => { e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); }}
@@ -504,21 +516,22 @@ export function VideoConverterUi() {
                       </div>
                     </div>
                   </div>
+                  )}
 
                   {/* Footer row */}
-                  <div className="flex items-center justify-between gap-4 pt-4 border-t border-neutral-800">
+                  <div className="flex items-center justify-between gap-4 pt-4 border-t border-border">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-neutral-800 overflow-hidden flex items-center justify-center">
-                        {file?.type.includes("video") ? <VideoIcon className="w-5 h-5 text-neutral-400" /> : <ImageIcon className="w-5 h-5 text-neutral-400" />}
+                      <div className="w-10 h-10 rounded-full bg-surface-strong overflow-hidden flex items-center justify-center">
+                        {file?.type.includes("video") ? <VideoIcon className="w-5 h-5 text-foreground-muted" /> : <ImageIcon className="w-5 h-5 text-foreground-muted" />}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-white truncate max-w-[200px]">{file.name}</p>
-                        <p className="text-xs text-neutral-500">{(file.size / (1024 * 1024)).toFixed(2)} MB • Recortando {formatTime(endTime - startTime)}</p>
+                        <p className="text-sm font-bold text-foreground truncate max-w-[200px]">{file.name}</p>
+                        <p className="text-xs text-foreground-subtle">{(file.size / (1024 * 1024)).toFixed(2)} MB{mode === "video-to-gif" ? ` • Recortando ${formatTime(endTime - startTime)}` : " • GIF completo"}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button onClick={resetState} className="p-3 text-neutral-400 hover:text-white transition-colors" title="Eliminar archivo">
+                      <button onClick={resetState} className="p-3 text-foreground-muted hover:text-foreground transition-colors" title="Eliminar archivo">
                         <X className="w-5 h-5" />
                       </button>
 
@@ -529,15 +542,15 @@ export function VideoConverterUi() {
                         onClick={() => !isConverting && setShowQualityModal(true)}
                         disabled={isConverting}
                         className={cn(
-                          "relative px-6 h-12 rounded-2xl font-bold transition-all shadow-xl flex items-center gap-2.5 overflow-hidden",
+                          "relative px-6 h-12 rounded-panel font-bold transition-all shadow-xl flex items-center gap-2.5 overflow-hidden",
                           isConverting
-                            ? "bg-neutral-800 text-neutral-500 cursor-not-allowed"
+                            ? "bg-surface-strong text-foreground-subtle cursor-not-allowed"
                             : "bg-white text-black hover:shadow-white/20"
                         )}
                       >
                         {isConverting ? (
                           <>
-                            <div className="w-4 h-4 border-2 border-neutral-600 border-t-white rounded-full animate-spin" />
+                            <div className="w-4 h-4 border-2 border-border-strong border-t-white rounded-full animate-spin" />
                             <span>Procesando {Math.round(progress)}%</span>
                           </>
                         ) : (
@@ -562,49 +575,49 @@ export function VideoConverterUi() {
         <section>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-              <CheckCircle2 className="w-5 h-5 text-white" />
+              <CheckCircle2 className="w-5 h-5 text-foreground" />
             </div>
-            <h2 className="text-xl font-bold text-white">Resultado</h2>
+            <h2 className="text-xl font-bold text-foreground">Resultado</h2>
           </div>
           <AnimatePresence mode="wait">
             {resultUrl ? (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-neutral-900 border border-neutral-800 rounded-[32px] overflow-hidden p-6">
-                <div className="relative aspect-video bg-black rounded-2xl overflow-hidden mb-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-surface border border-border rounded-hero overflow-hidden p-6">
+                <div className="relative aspect-video bg-black rounded-panel overflow-hidden mb-6">
                   {mode === "video-to-gif"
                     ? <img src={resultUrl} className="w-full h-full object-contain" alt="Resultado" />
                     : <video src={resultUrl} controls className="w-full h-full object-contain" />}
                 </div>
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-panel bg-emerald-500/10 flex items-center justify-center">
                       <CheckCircle2 className="w-6 h-6 text-emerald-500" />
                     </div>
                     <div>
-                      <p className="font-bold text-white">¡Conversión lista!</p>
-                      <p className="text-sm text-neutral-500">Haz clic en descargar para guardar el archivo.</p>
+                      <p className="font-bold text-foreground">¡Conversión lista!</p>
+                      <p className="text-sm text-foreground-subtle">Haz clic en descargar para guardar el archivo.</p>
                     </div>
                   </div>
-                  <a href={resultUrl} download={mode === "video-to-gif" ? "result.gif" : "result.mp4"} className="w-full md:w-auto px-10 h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3">
+                  <a href={resultUrl} download={mode === "video-to-gif" ? "result.gif" : "result.mp4"} className="w-full md:w-auto px-10 h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-panel transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3">
                     <Download className="w-5 h-5" />
                     Descargar Resultado
                   </a>
                 </div>
               </motion.div>
             ) : isConverting ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="aspect-video rounded-[32px] bg-neutral-900/50 border border-neutral-800 border-dashed flex flex-col items-center justify-center gap-6">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="aspect-video rounded-hero bg-surface/50 border border-border border-dashed flex flex-col items-center justify-center gap-6">
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full border-4 border-neutral-800 border-t-white animate-spin" />
-                  <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white">{Math.round(progress)}%</div>
+                  <div className="w-24 h-24 rounded-full border-4 border-border border-t-white animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-foreground">{Math.round(progress)}%</div>
                 </div>
                 <div className="text-center">
-                  <p className="text-xl font-bold text-white mb-2 tracking-tight">Procesando Video</p>
-                  <p className="text-neutral-500 font-medium">Usando FFmpeg.wasm localmente...</p>
+                  <p className="text-xl font-bold text-foreground mb-2 tracking-tight">Procesando Video</p>
+                  <p className="text-foreground-subtle font-medium">Usando FFmpeg.wasm localmente...</p>
                 </div>
               </motion.div>
             ) : (
-              <div className="aspect-video rounded-[32px] bg-neutral-900/30 border border-neutral-800 border-dashed flex flex-col items-center justify-center opacity-30">
-                <Download className="w-12 h-12 text-neutral-700 mb-4" />
-                <p className="text-neutral-600 font-bold">Sin resultados todavía</p>
+              <div className="aspect-video rounded-hero bg-surface/30 border border-border border-dashed flex flex-col items-center justify-center opacity-30">
+                <Download className="w-12 h-12 text-foreground-faint mb-4" />
+                <p className="text-foreground-faint font-bold">Sin resultados todavía</p>
               </div>
             )}
           </AnimatePresence>
@@ -623,22 +636,22 @@ export function VideoConverterUi() {
       <AnimatePresence>
         {error && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-neutral-900 border border-neutral-800 w-full max-w-md rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-surface border border-border w-full max-w-md rounded-hero p-8 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-linear-to-r from-red-500 to-orange-500" />
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-panel bg-red-500/10 flex items-center justify-center shrink-0">
                   <AlertCircle className="w-6 h-6 text-red-500" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-white mb-2">{error.title}</h3>
-                  <p className="text-neutral-400 mb-6 leading-relaxed">{error.message}</p>
-                  <div className="bg-black/40 rounded-2xl p-5 border border-white/5">
-                    <p className="text-xs text-neutral-500 font-bold mb-2 uppercase tracking-widest">Sugerencia</p>
-                    <p className="text-sm text-neutral-300">{error.suggestion}</p>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">{error.title}</h3>
+                  <p className="text-foreground-muted mb-6 leading-relaxed">{error.message}</p>
+                  <div className="bg-black/40 rounded-panel p-5 border border-white/5">
+                    <p className="text-xs text-foreground-subtle font-bold mb-2 uppercase tracking-widest">Sugerencia</p>
+                    <p className="text-sm text-foreground-muted">{error.suggestion}</p>
                   </div>
                 </div>
               </div>
-              <button onClick={() => setError(null)} className="mt-8 w-full bg-white hover:bg-neutral-200 text-black h-14 rounded-2xl font-bold transition-all shadow-xl">
+              <button onClick={() => setError(null)} className="mt-8 w-full bg-white hover:bg-neutral-200 text-black h-14 rounded-panel font-bold transition-all shadow-xl">
                 Entendido
               </button>
             </motion.div>

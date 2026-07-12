@@ -1,61 +1,345 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   OPEN UTILS — Design System
+   Built on the Geist Design System (Vercel): monochrome-forward surfaces,
+   a single blue accent, subtle 1px borders, tight radii and the Geist type.
+   ========================================================================== */
+
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card: #111111;
-  --card-hover: #1a1a1a;
-  --border: #222222;
-  --border-hover: #333333;
-  --accent: #ffffff;
-  --muted: #666666;
-  --muted-foreground: #888888;
-  --success: #00d17a;
-  --error: #ff4444;
+  /* ---- Geist scale · Grays (dark) --------------------------------------- */
+  --ds-gray-100: #1a1a1a;
+  --ds-gray-200: #1f1f1f;
+  --ds-gray-300: #292929;
+  --ds-gray-400: #2e2e2e;
+  --ds-gray-500: #454545;
+  --ds-gray-600: #6b6b6b;
+  --ds-gray-700: #7d7d7d;
+  --ds-gray-800: #a1a1a1;
+  --ds-gray-900: #b8b8b8;
+  --ds-gray-1000: #ededed;
+
+  /* Alpha grays — for borders/overlays that sit on any surface */
+  --ds-gray-alpha-100: rgba(255, 255, 255, 0.06);
+  --ds-gray-alpha-200: rgba(255, 255, 255, 0.09);
+  --ds-gray-alpha-300: rgba(255, 255, 255, 0.13);
+  --ds-gray-alpha-400: rgba(255, 255, 255, 0.18);
+
+  /* ---- Geist scale · Blue (primary accent) ------------------------------ */
+  --ds-blue-subtle: rgba(0, 112, 243, 0.12);
+  --ds-blue-border: rgba(0, 112, 243, 0.35);
+  --ds-blue-700: #0070f3;
+  --ds-blue-800: #0761d1;
+  --ds-blue-900: #0058c4;
+  --ds-blue-text: #52a8ff;
+
+  /* ---- Geist scale · Category accents (used across the bento) ----------- */
+  --ds-purple-600: #8e4ec6;
+  --ds-purple-text: #bf7af0;
+  --ds-amber-600: #d97706;
+  --ds-amber-text: #f5a623;
+  --ds-teal-600: #12a594;
+  --ds-teal-text: #3ddbd0;
+
+  /* ---- Status ----------------------------------------------------------- */
+  --ds-green-600: #16a34a;
+  --ds-green-text: #4ade80;
+  --ds-red-600: #e5484d;
+  --ds-red-text: #ff6166;
+
+  /* ---- Semantic surfaces ------------------------------------------------ */
+  --background: #000000;        /* app canvas */
+  --background-elevated: #0a0a0a;
+  --surface: #0e0e0e;           /* cards / panels */
+  --surface-hover: #161616;
+  --surface-strong: #1c1c1c;    /* inset wells, thumbnails */
+
+  /* ---- Semantic borders ------------------------------------------------- */
+  --border: var(--ds-gray-alpha-200);
+  --border-strong: var(--ds-gray-alpha-400);
+
+  /* ---- Semantic text ---------------------------------------------------- */
+  --foreground: var(--ds-gray-1000);
+  --foreground-muted: var(--ds-gray-800);
+  --foreground-subtle: var(--ds-gray-700);
+  --foreground-faint: var(--ds-gray-600);
+
+  /* ---- Accent (semantic) ------------------------------------------------ */
+  --accent: var(--ds-blue-700);
+  --accent-hover: var(--ds-blue-800);
+  --accent-foreground: #ffffff;
+  --accent-text: var(--ds-blue-text);
+  --accent-subtle: var(--ds-blue-subtle);
+
+  /* ---- Radii (Geist is tight) ------------------------------------------ */
+  --radius-control: 8px;   /* buttons, inputs, small chips */
+  --radius-card: 12px;     /* cards */
+  --radius-panel: 16px;    /* large panels / dropzones */
+  --radius-hero: 24px;     /* bento hero */
+
+  /* ---- Elevation -------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.55);
+
+  /* ---- Motion ----------------------------------------------------------- */
+  --ease-geist: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Map design tokens into Tailwind's theme so utilities stay on-system. */
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-hover: var(--card-hover);
+  --color-background-elevated: var(--background-elevated);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-strong: var(--surface-strong);
+
   --color-border: var(--border);
-  --color-border-hover: var(--border-hover);
+  --color-border-strong: var(--border-strong);
+
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+  --color-foreground-faint: var(--foreground-faint);
+
   --color-accent: var(--accent);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-success: var(--success);
-  --color-error: var(--error);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-text: var(--accent-text);
+  --color-accent-subtle: var(--accent-subtle);
+
+  --color-success: var(--ds-green-600);
+  --color-success-text: var(--ds-green-text);
+  --color-error: var(--ds-red-600);
+  --color-error-text: var(--ds-red-text);
+
+  /* Category accents */
+  --color-cat-blue: var(--ds-blue-700);
+  --color-cat-purple: var(--ds-purple-600);
+  --color-cat-amber: var(--ds-amber-600);
+  --color-cat-teal: var(--ds-teal-600);
+
+  --radius-control: var(--radius-control);
+  --radius-card: var(--radius-card);
+  --radius-panel: var(--radius-panel);
+  --radius-hero: var(--radius-hero);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* ---------------------------------------------------------------------------
+   Base
+   ------------------------------------------------------------------------- */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent-subtle);
+  color: var(--foreground);
+}
+
+/* Consistent, quiet focus ring across the whole app (Geist a11y) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
+  background: var(--ds-gray-300);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--ds-gray-500);
+  background-clip: padding-box;
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-gray-300) transparent;
 }
 
-/* File input hidden */
 input[type="file"] {
   display: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Component primitives — the shared CSS identity of Open Utils.
+   Compose these with Tailwind utilities; they own the recurring "shape".
+   ------------------------------------------------------------------------- */
+
+/* Surface card */
+.ou-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+/* Interactive surface (lifts + brightens border on hover) */
+.ou-card-interactive {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  transition: border-color 0.2s var(--ease-geist),
+    background-color 0.2s var(--ease-geist), transform 0.2s var(--ease-geist);
+}
+.ou-card-interactive:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+/* Uppercase micro-label used above inputs/sections */
+.ou-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--foreground-subtle);
+}
+
+/* Buttons ------------------------------------------------------------------ */
+.ou-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  padding: 0 0.875rem;
+  height: 2.5rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.16s var(--ease-geist),
+    border-color 0.16s var(--ease-geist), color 0.16s var(--ease-geist),
+    opacity 0.16s var(--ease-geist);
+}
+.ou-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ou-btn-primary {
+  background: var(--foreground);
+  color: #000000;
+}
+.ou-btn-primary:not(:disabled):hover {
+  background: #ffffff;
+}
+
+.ou-btn-accent {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.ou-btn-accent:not(:disabled):hover {
+  background: var(--accent-hover);
+}
+
+.ou-btn-secondary {
+  background: var(--surface-strong);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+.ou-btn-secondary:not(:disabled):hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.ou-btn-ghost {
+  background: transparent;
+  color: var(--foreground-muted);
+}
+.ou-btn-ghost:not(:disabled):hover {
+  background: var(--ds-gray-alpha-100);
+  color: var(--foreground);
+}
+
+/* Pill (rounded chip button/toggle) */
+.ou-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  padding: 0.375rem 0.875rem;
+  border: 1px solid var(--border);
+  background: var(--ds-gray-alpha-100);
+  color: var(--foreground-muted);
+  transition: all 0.16s var(--ease-geist);
+}
+.ou-pill:hover {
+  background: var(--ds-gray-alpha-200);
+  color: var(--foreground);
+}
+
+/* Badge (non-interactive status tag) */
+.ou-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--border);
+  color: var(--foreground-subtle);
+}
+
+/* Dropzone / input well */
+.ou-dropzone {
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--background-elevated);
+  transition: border-color 0.2s var(--ease-geist),
+    background-color 0.2s var(--ease-geist);
+}
+.ou-dropzone:hover {
+  border-color: var(--ds-gray-500);
+  background: var(--surface);
+}
+.ou-dropzone[data-dragging="true"] {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+/* Grain-free subtle top hairline used on modals/heroes */
+.ou-hairline-top::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--ds-gray-alpha-400),
+    transparent
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

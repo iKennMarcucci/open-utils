@@ -6,7 +6,9 @@ let ffmpeg: FFmpeg | null = null;
 export const loadFFmpeg = async () => {
     if (ffmpeg) return ffmpeg;
     ffmpeg = new FFmpeg();
-    const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+    // Self-hosted core — served same-origin from `public/ffmpeg/` (see
+    // scripts/copy-ffmpeg.mjs). No CDN request is ever made: 100% local.
+    const baseURL = "/ffmpeg";
     await ffmpeg.load({
         coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
         wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
@@ -102,16 +104,17 @@ export const convertMedia = async ({
     } else {
       const q = QUALITY_SETTINGS["gif-to-video"][quality];
 
+      // A GIF can't be loaded by a <video> element, so there is no reliable
+      // in-browser duration to trim against — convert the whole GIF. libx264
+      // needs even dimensions (yuv420p), hence the scale filter.
       await ffmpeg.exec([
         "-y",
         "-i", inputName,
-        "-ss", startTime.toString(),
-        "-t", duration.toString(),
+        "-movflags", "+faststart",
+        "-pix_fmt", "yuv420p",
         "-c:v", "libx264",
         "-crf", q.crf.toString(),
         "-preset", q.preset,
-        "-pix_fmt", "yuv420p",
-        "-movflags", "+faststart",
         "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
         outputName
       ]);

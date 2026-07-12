@@ -1,10 +1,5 @@
-import * as pdfjsLib from "pdfjs-dist";
+import { pdfjsLib } from "./pdfjs";
 import { PDFDocument } from "pdf-lib";
-
-// Configure PDF.js worker
-if (typeof window !== "undefined") {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-}
 
 export type ConversionMode = "pdf-to-img" | "img-to-pdf";
 

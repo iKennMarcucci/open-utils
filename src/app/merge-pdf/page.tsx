@@ -1,23 +1,6 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import dynamic from "next/dynamic";
-
-const MergeConverterUi = dynamic(
-  () => import("@/components/MergeConverterUi").then((mod) => mod.MergeConverterUi),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex-1 flex items-center justify-center min-h-[500px]">
-        <div className="w-12 h-12 border-[3px] border-neutral-800 border-t-white rounded-full animate-spin" />
-      </div>
-    ),
-  }
-);
-
+// "Unificador PDF" now lives in the unified PDF organizer as the `merge` mode.
 export default function MergePdfPage() {
-  return (
-    <div className="w-full min-h-full">
-      <MergeConverterUi />
-    </div>
-  );
+  redirect("/pdf-organizer?mode=merge");
 }

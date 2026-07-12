@@ -14,8 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Local Converters",
-  description: "A repository of fast, local, and private conversion tools.",
+  title: {
+    default: "Open Utils — Fast, local, private utilities",
+    template: "%s · Open Utils",
+  },
+  description:
+    "Open Utils is a collection of fast, local, and private browser utilities. Convert, merge and transform files without anything ever leaving your device.",
+  applicationName: "Open Utils",
 };
 
 export default function RootLayout({
