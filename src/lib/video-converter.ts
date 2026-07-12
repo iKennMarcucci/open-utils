@@ -1,0 +1,148 @@
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile, toBlobURL } from "@ffmpeg/util";
+
+let ffmpeg: FFmpeg | null = null;
+
+export const loadFFmpeg = async () => {
+    if (ffmpeg) return ffmpeg;
+    ffmpeg = new FFmpeg();
+    const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+    await ffmpeg.load({
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+    });
+    return ffmpeg;
+};
+
+export type VideoConversionMode = "video-to-gif" | "gif-to-video";
+export type QualityPreset = "light" | "normal" | "high";
+
+export interface VideoConversionParams {
+  file: File;
+  startTime: number;
+  endTime: number;
+  mode: VideoConversionMode;
+  quality: QualityPreset;
+  onProgress?: (progress: number) => void;
+}
+
+const QUALITY_SETTINGS = {
+  "video-to-gif": {
+    light:  { fps: 10, scale: "480:-1", dither: "bayer"        },
+    normal: { fps: 18, scale: "720:-1", dither: "sierra2"      },
+    high:   { fps: 24, scale: "iw:-1",  dither: "sierra2_4a"   },
+  },
+  "gif-to-video": {
+    light:  { crf: 32, preset: "ultrafast" },
+    normal: { crf: 22, preset: "ultrafast" },
+    high:   { crf: 16, preset: "ultrafast" },
+  },
+} as const;
+
+export const convertMedia = async ({
+  file,
+  startTime,
+  endTime,
+  mode,
+  quality,
+  onProgress,
+}: VideoConversionParams): Promise<string> => {
+  const ffmpeg = await loadFFmpeg();
+
+  const logs: string[] = [];
+  ffmpeg.on("log", ({ message }) => {
+    logs.push(message);
+    console.log("[FFmpeg]", message);
+  });
+
+  if (onProgress) {
+    ffmpeg.on("progress", ({ progress }) => {
+      onProgress(Math.min(progress * 100, 100));
+    });
+  }
+
+  const ext = file.name.split('.').pop()?.toLowerCase() || "mp4";
+  const inputName = `input.${ext}`;
+  const outputName = mode === "video-to-gif" ? "output.gif" : "output.mp4";
+
+  await ffmpeg.writeFile(inputName, await fetchFile(file));
+
+  const duration = endTime - startTime;
+
+  try {
+    if (mode === "video-to-gif") {
+      const q = QUALITY_SETTINGS["video-to-gif"][quality];
+
+      // Paso 1: Generar paleta
+      await ffmpeg.exec([
+        "-y",
+        "-ss", startTime.toString(),
+        "-t", duration.toString(),
+        "-i", inputName,
+        "-vf", `fps=${q.fps},scale=${q.scale}:flags=lanczos,palettegen=max_colors=256:stats_mode=diff`,
+        "palette.png"
+      ]);
+
+      const paletteData = await ffmpeg.readFile("palette.png").catch(() => null);
+      if (!paletteData || paletteData.length === 0) {
+        throw new Error("Falló la generación de la paleta.");
+      }
+
+      // Paso 2: Generar GIF con paleta
+      await ffmpeg.exec([
+        "-y",
+        "-ss", startTime.toString(),
+        "-t", duration.toString(),
+        "-i", inputName,
+        "-i", "palette.png",
+        "-lavfi", `fps=${q.fps},scale=${q.scale}:flags=lanczos[x];[x][1:v]paletteuse=dither=${q.dither}`,
+        outputName
+      ]);
+
+    } else {
+      const q = QUALITY_SETTINGS["gif-to-video"][quality];
+
+      await ffmpeg.exec([
+        "-y",
+        "-i", inputName,
+        "-ss", startTime.toString(),
+        "-t", duration.toString(),
+        "-c:v", "libx264",
+        "-crf", q.crf.toString(),
+        "-preset", q.preset,
+        "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
+        "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+        outputName
+      ]);
+    }
+
+    const data = await ffmpeg.readFile(outputName);
+
+    if (!data || data.length === 0) {
+      const lastLogs = logs.slice(-20).join("\n");
+      throw new Error(`El archivo de salida está vacío.\n\nLogs:\n${lastLogs}`);
+    }
+
+    const uint8 = data as Uint8Array;
+    const arrayBuffer = new ArrayBuffer(uint8.byteLength);
+    new Uint8Array(arrayBuffer).set(uint8);
+
+    const blob = new Blob([arrayBuffer], {
+      type: mode === "video-to-gif" ? "image/gif" : "video/mp4"
+    });
+
+    try { await ffmpeg.deleteFile(inputName); } catch(_) {}
+    try { await ffmpeg.deleteFile(outputName); } catch(_) {}
+    try { await ffmpeg.deleteFile("palette.png"); } catch(_) {}
+
+    return URL.createObjectURL(blob);
+
+  } catch (err) {
+    try { await ffmpeg.deleteFile(inputName); } catch(_) {}
+    try { await ffmpeg.deleteFile(outputName); } catch(_) {}
+    try { await ffmpeg.deleteFile("palette.png"); } catch(_) {}
+    console.error("FFmpeg error. Últimos logs:", logs.slice(-30).join("\n"));
+    throw err;
+  }
+};
