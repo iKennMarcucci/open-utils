@@ -1,5 +1,5 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile, toBlobURL } from "@ffmpeg/util";
+import { fetchFile } from "@ffmpeg/util";
 
 let ffmpeg: FFmpeg | null = null;
 
@@ -8,10 +8,15 @@ export const loadFFmpeg = async () => {
     ffmpeg = new FFmpeg();
     // Self-hosted core — served same-origin from `public/ffmpeg/` (see
     // scripts/copy-ffmpeg.mjs). No CDN request is ever made: 100% local.
+    //
+    // The URLs are passed straight through rather than via `toBlobURL`. That
+    // helper exists to load a core from a *different* origin; here it only
+    // forced the whole 32 MB wasm into a Blob first, doubling peak memory and
+    // preventing the browser from stream-compiling it as it downloads.
     const baseURL = "/ffmpeg";
     await ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+        coreURL: `${baseURL}/ffmpeg-core.js`,
+        wasmURL: `${baseURL}/ffmpeg-core.wasm`,
     });
     return ffmpeg;
 };
@@ -51,10 +56,13 @@ export const convertMedia = async ({
 }: VideoConversionParams): Promise<string> => {
   const ffmpeg = await loadFFmpeg();
 
+  // FFmpeg emits hundreds of log lines per conversion. They're kept in memory so
+  // a failure can report the tail (see below), but they are not echoed to the
+  // console in production — that was flooding it and costing real time.
   const logs: string[] = [];
   ffmpeg.on("log", ({ message }) => {
     logs.push(message);
-    console.log("[FFmpeg]", message);
+    if (process.env.NODE_ENV !== "production") console.log("[FFmpeg]", message);
   });
 
   if (onProgress) {

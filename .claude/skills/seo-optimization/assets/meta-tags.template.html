@@ -1,0 +1,52 @@
+<!--
+  Plantilla de <head> optimizada para SEO.
+  Sustituye los marcadores {{...}} por los valores reales de cada página.
+  Cada página debe tener valores ÚNICOS de title, description, canonical y OG.
+-->
+<head>
+  <!-- Fundamentos -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- SEO on-page -->
+  <title>{{TITLE_50_60_CHARS}} | {{MARCA}}</title>
+  <meta name="description" content="{{DESCRIPTION_140_160_CHARS}}">
+  <link rel="canonical" href="https://dominio.com{{RUTA}}">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+
+  <!-- Open Graph (redes sociales) -->
+  <meta property="og:type" content="{{website_o_article}}">
+  <meta property="og:title" content="{{TITLE_SOCIAL}}">
+  <meta property="og:description" content="{{DESCRIPTION_SOCIAL}}">
+  <meta property="og:image" content="https://dominio.com/img/og-image.jpg"><!-- 1200x630 -->
+  <meta property="og:url" content="https://dominio.com{{RUTA}}">
+  <meta property="og:site_name" content="{{MARCA}}">
+  <meta property="og:locale" content="es_ES">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{TITLE_SOCIAL}}">
+  <meta name="twitter:description" content="{{DESCRIPTION_SOCIAL}}">
+  <meta name="twitter:image" content="https://dominio.com/img/og-image.jpg">
+
+  <!-- hreflang (solo si hay versiones en otros idiomas/países) -->
+  <!--
+  <link rel="alternate" hreflang="es-ES" href="https://dominio.com/es{{RUTA}}">
+  <link rel="alternate" hreflang="en-US" href="https://dominio.com/en{{RUTA}}">
+  <link rel="alternate" hreflang="x-default" href="https://dominio.com{{RUTA}}">
+  -->
+
+  <!-- Rendimiento: preload del recurso LCP y preconnect a orígenes críticos -->
+  <link rel="preload" as="image" href="https://dominio.com/img/hero.webp" fetchpriority="high">
+  <!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> -->
+
+  <!-- Structured data: pega aquí el JSON-LD adecuado (ver structured-data-templates.json) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "{{MARCA}}",
+    "url": "https://dominio.com/"
+  }
+  </script>
+</head>

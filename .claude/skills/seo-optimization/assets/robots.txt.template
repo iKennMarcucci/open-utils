@@ -1,0 +1,35 @@
+# robots.txt — plantilla base
+# Reemplaza https://dominio.com por tu dominio real.
+# Recuerda: robots.txt controla el RASTREO, no la indexación.
+# Para excluir de la indexación usa <meta name="robots" content="noindex">,
+# y NO bloquees en robots.txt esas mismas URLs (o Google no verá el noindex).
+
+# --- Regla general para todos los rastreadores ---
+User-agent: *
+Allow: /
+
+# Bloquea zonas privadas o sin valor SEO (ajústalas a tu proyecto):
+Disallow: /admin/
+Disallow: /wp-admin/
+Disallow: /carrito/
+Disallow: /checkout/
+Disallow: /cuenta/
+Disallow: /*?add-to-cart=
+Disallow: /*?sessionid=
+Disallow: /*&sessionid=
+
+# NO bloquees recursos que Google necesita para renderizar:
+# (deja accesibles CSS, JS e imágenes)
+Allow: /*.css$
+Allow: /*.js$
+
+# --- Rastreadores de IA (decisión consciente; nombres verificables) ---
+# Descomenta para bloquear el entrenamiento de modelos manteniendo la búsqueda:
+# User-agent: GPTBot
+# Disallow: /
+#
+# User-agent: CCBot
+# Disallow: /
+
+# --- Sitemaps (usa URL absoluta) ---
+Sitemap: https://dominio.com/sitemap.xml

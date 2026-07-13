@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
   RefreshCw, UploadCloud, Video as VideoIcon, Image as ImageIcon,
@@ -268,12 +268,13 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function VideoConverterUi() {
-  const searchParams = useSearchParams();
-  const initialModeParam = searchParams?.get("mode") as VideoConversionMode | null;
-  const initialMode = initialModeParam === "gif-to-video" ? "gif-to-video" : "video-to-gif";
+/** Each direction is its own route, so the swap control is a real link. */
+const COUNTERPART: Record<VideoConversionMode, { href: string; label: string }> = {
+  "video-to-gif": { href: "/gif-a-video", label: "Cambiar a GIF a video" },
+  "gif-to-video": { href: "/video-a-gif", label: "Cambiar a Video a GIF" },
+};
 
-  const [mode, setMode] = useState<VideoConversionMode>(initialMode);
+export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
   const [file, setFile] = useState<File | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -292,14 +293,6 @@ export function VideoConverterUi() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!searchParams) return;
-    const urlMode = searchParams.get("mode") as VideoConversionMode | null;
-    if (urlMode === "video-to-gif" || urlMode === "gif-to-video") {
-      if (mode !== urlMode) { setMode(urlMode); resetState(); }
-    }
-  }, [searchParams]);
 
   const resetState = () => {
     setFile(null);
@@ -401,19 +394,19 @@ export function VideoConverterUi() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-12">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <h1 className="text-4xl font-semibold text-foreground mb-2 tracking-tight">
-            {mode === "video-to-gif" ? "Video ⇄ GIF" : "GIF ⇄ Video"}
-          </h1>
+          <h2 className="text-4xl font-semibold text-foreground mb-2 tracking-tight">
+            {mode === "video-to-gif" ? "Video a GIF" : "GIF a video"}
+          </h2>
           <p className="text-foreground-subtle font-medium">Procesa tus videos localmente con privacidad total.</p>
         </motion.div>
-        <motion.button
-          initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-          onClick={() => { setMode(prev => prev === "video-to-gif" ? "gif-to-video" : "video-to-gif"); resetState(); }}
+        <Link
+          href={COUNTERPART[mode].href}
+          title={COUNTERPART[mode].label}
+          aria-label={COUNTERPART[mode].label}
           className="p-2 rounded-full hover:bg-surface-strong/80 transition-colors text-foreground-muted hover:text-foreground"
         >
           <RefreshCw className={cn("w-6 h-6 transition-transform duration-500", mode === "video-to-gif" && "rotate-180")} />
-        </motion.button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-12">

@@ -1,0 +1,201 @@
+{
+  "_readme": "Plantillas JSON-LD listas por tipo. Copia el bloque que necesites, sustituye los valores y pégalo en un <script type=\"application/ld+json\">. El markup debe reflejar contenido VISIBLE en la página. Valida siempre con scripts/validate_structured_data.py y el Rich Results Test.",
+
+  "Organization": {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Nombre de la marca",
+    "url": "https://dominio.com/",
+    "logo": "https://dominio.com/logo.png",
+    "sameAs": [
+      "https://www.linkedin.com/company/marca",
+      "https://twitter.com/marca",
+      "https://www.instagram.com/marca"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+34-900-000-000",
+      "contactType": "customer service",
+      "availableLanguage": ["Spanish", "English"]
+    }
+  },
+
+  "WebSite_SearchBox": {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Nombre del sitio",
+    "url": "https://dominio.com/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://dominio.com/buscar?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  },
+
+  "Article": {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Título del artículo (máx ~110 car.)",
+    "image": ["https://dominio.com/img/articulo.jpg"],
+    "datePublished": "2026-01-15T08:00:00+01:00",
+    "dateModified": "2026-01-20T10:30:00+01:00",
+    "author": {
+      "@type": "Person",
+      "name": "Nombre Apellido",
+      "url": "https://dominio.com/autor/nombre"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Nombre de la marca",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://dominio.com/logo.png"
+      }
+    }
+  },
+
+  "Product": {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Nombre del producto",
+    "image": ["https://dominio.com/img/producto.jpg"],
+    "description": "Descripción del producto.",
+    "sku": "SKU-0001",
+    "brand": { "@type": "Brand", "name": "Marca" },
+    "offers": {
+      "@type": "Offer",
+      "url": "https://dominio.com/producto",
+      "priceCurrency": "EUR",
+      "price": "99.99",
+      "availability": "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.5",
+      "reviewCount": "120"
+    }
+  },
+
+  "LocalBusiness": {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Nombre del negocio",
+    "image": "https://dominio.com/img/local.jpg",
+    "url": "https://dominio.com/",
+    "telephone": "+34-900-000-000",
+    "priceRange": "$$",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Calle Ejemplo 123",
+      "addressLocality": "Ciudad",
+      "addressRegion": "Región",
+      "postalCode": "00000",
+      "addressCountry": "ES"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "40.4168",
+      "longitude": "-3.7038"
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "09:00",
+        "closes": "18:00"
+      }
+    ]
+  },
+
+  "BreadcrumbList": {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://dominio.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Categoría", "item": "https://dominio.com/categoria" },
+      { "@type": "ListItem", "position": 3, "name": "Página actual" }
+    ]
+  },
+
+  "FAQPage": {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "¿Pregunta frecuente 1?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Respuesta a la pregunta 1. Debe estar visible en la página."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Pregunta frecuente 2?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Respuesta a la pregunta 2."
+        }
+      }
+    ]
+  },
+
+  "Event": {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": "Nombre del evento",
+    "startDate": "2026-03-10T19:00:00+01:00",
+    "endDate": "2026-03-10T22:00:00+01:00",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "location": {
+      "@type": "Place",
+      "name": "Lugar del evento",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Calle Ejemplo 123",
+        "addressLocality": "Ciudad",
+        "postalCode": "00000",
+        "addressCountry": "ES"
+      }
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": "https://dominio.com/entradas",
+      "price": "25",
+      "priceCurrency": "EUR",
+      "availability": "https://schema.org/InStock"
+    }
+  },
+
+  "Recipe": {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    "name": "Nombre de la receta",
+    "image": ["https://dominio.com/img/receta.jpg"],
+    "author": { "@type": "Person", "name": "Nombre Apellido" },
+    "datePublished": "2026-01-15",
+    "description": "Descripción breve de la receta.",
+    "prepTime": "PT20M",
+    "cookTime": "PT30M",
+    "totalTime": "PT50M",
+    "recipeYield": "4 raciones",
+    "recipeIngredient": [
+      "200 g de ingrediente 1",
+      "2 unidades de ingrediente 2"
+    ],
+    "recipeInstructions": [
+      { "@type": "HowToStep", "text": "Paso 1 de la elaboración." },
+      { "@type": "HowToStep", "text": "Paso 2 de la elaboración." }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.7",
+      "ratingCount": "89"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+# Open Utils
+
+> Colección de utilidades de archivos gratuitas y de código abierto que se ejecutan íntegramente en el navegador. Los archivos nunca se suben a ningún servidor: se abren y se procesan en la memoria del dispositivo del propio usuario.
+
+Open Utils es una alternativa privada a las herramientas online de PDF, imagen y video del tipo iLovePDF o Smallpdf. La diferencia principal es arquitectónica: no existe un servidor de procesamiento. Todo ocurre en el cliente, por lo que no hay subida, ni copia, ni retención de los archivos.
+
+- Licencia: MIT (código abierto)
+- Autor: Kenn Marcucci
+- Repositorio: https://github.com/iKennMarcucci/open-utils
+- Gratis, sin registro, sin cuentas y sin marca de agua en los archivos exportados
+- Idioma: español
+
+## Herramientas
+
+- [Editor de PDF](https://openutils.co/editor-pdf): Anota un PDF en el navegador — escribir texto, dibujar a mano alzada, firmar, resaltar, añadir formas, flechas e imágenes, y rotar, reordenar o eliminar páginas. Exporta a PDF. Son anotaciones superpuestas: no reescribe el texto original del documento. Límite: 100 MB.
+- [Editor de Imagen](https://openutils.co/editor-imagen): Dibuja, escribe, resalta y añade formas y recuadros sobre una imagen. Exporta en PNG o JPG a la resolución original.
+- [PDF a imagen](https://openutils.co/pdf-a-imagen): Convierte cada página de un PDF en una imagen JPG o PNG, renderizada al doble de resolución. Un archivo por página. Límite: 50 MB.
+- [Imagen a PDF](https://openutils.co/imagen-a-pdf): Combina varias imágenes (JPG, PNG, WebP, BMP, GIF) en un único PDF, una página por imagen y con el tamaño exacto de cada una. Las imágenes se reordenan arrastrándolas. Límite: 50 MB por imagen.
+- [Unir PDF](https://openutils.co/unir-pdf): Combina varios PDF e imágenes en un único documento, reordenando los archivos. La numeración de páginas es opcional y está desactivada por defecto. Límite: 50 MB por archivo.
+- [Dividir PDF](https://openutils.co/dividir-pdf): Divide un PDF en varios paquetes de páginas o extrae páginas sueltas. Exporta como PDF, como un PDF por página o como imágenes PNG, y descarga todo en un ZIP. Límite: 100 MB.
+- [Video a GIF](https://openutils.co/video-a-gif): Recorta un fragmento de video y expórtalo como GIF, con tres niveles de calidad (Liviano, Normal, Alta). Usa FFmpeg compilado a WebAssembly, en local.
+- [GIF a video](https://openutils.co/gif-a-video): Convierte un GIF animado en un video MP4 (H.264). Convierte el GIF completo, sin recorte.
+- [Formato JSON](https://openutils.co/formato-json): Formatea, indenta, valida y minifica JSON al instante. Procesamiento local, apto para datos sensibles.
+
+## Datos citables
+
+- Open Utils procesa los archivos en el navegador: no se suben a ningún servidor.
+- No añade marca de agua a ningún archivo exportado, y no requiere registro ni cuenta.
+- Es de código abierto con licencia MIT, por lo que cualquiera puede auditar qué hace el código que se ejecuta.
+- Cualquier usuario puede verificar la ausencia de subidas abriendo la pestaña Red de las herramientas de desarrollo del navegador mientras usa una herramienta.
+- Los límites de tamaño son de 50 MB por archivo en los conversores y en Unir PDF, y de 100 MB en el Editor de PDF y en Dividir PDF.
+
+## Notas
+
+- Requiere conexión para cargar la página; una vez cargada, el procesamiento de archivos no consume red. No es una PWA y no dispone de modo sin conexión.
+- El Editor de PDF trabaja por anotación superpuesta y no permite reescribir el texto original del documento.

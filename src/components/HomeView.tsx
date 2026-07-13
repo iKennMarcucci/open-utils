@@ -14,6 +14,8 @@ import {
   Sparkles,
   Pencil,
   Brush,
+  Image as ImageIcon,
+  Film,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,22 +23,25 @@ type Tool = {
   id: string;
   title: string;
   description: string;
-  href?: string;
+  href: string;
   icon: React.ComponentType<{ className?: string }>;
   category: string;
   accent: string; // css color for the category
   span: string; // grid span classes
   featured?: boolean;
-  soon?: boolean;
 };
 
+/**
+ * Every tool is a real, statically-linked route. Nothing here is derived from
+ * component state: a crawler must see all nine links in the initial HTML.
+ */
 const TOOLS: Tool[] = [
   {
-    id: "pdf-editor",
+    id: "editor-pdf",
     title: "Editor de PDF",
     description:
       "Dibuja, resalta, escribe, agrega formas, flechas e imágenes sobre tus PDFs. Rota, reordena y elimina páginas — como Adobe o Edge, pero 100% en tu navegador.",
-    href: "/pdf-editor",
+    href: "/editor-pdf",
     icon: Pencil,
     category: "Documentos",
     accent: "var(--ds-blue-text)",
@@ -44,66 +49,88 @@ const TOOLS: Tool[] = [
     featured: true,
   },
   {
-    id: "image-editor",
+    id: "editor-imagen",
     title: "Editor de Imagen",
     description:
       "Dibuja a mano, encierra en cuadros de colores, resalta, escribe texto y agrega formas sobre cualquier imagen. Exporta en PNG o JPG.",
-    href: "/image-editor",
+    href: "/editor-imagen",
     icon: Brush,
     category: "Multimedia",
     accent: "var(--ds-teal-text)",
     span: "md:col-span-1",
   },
   {
-    id: "pdf-converter",
-    title: "PDF ⇄ IMG",
+    id: "pdf-a-imagen",
+    title: "PDF a imagen",
     description:
-      "Convierte PDFs a imágenes de alta calidad o transforma varias imágenes en un único documento.",
-    href: "/pdf-converter",
+      "Convierte cada página de un PDF en una imagen JPG o PNG de alta calidad.",
+    href: "/pdf-a-imagen",
+    icon: ImageIcon,
+    category: "Documentos",
+    accent: "var(--ds-blue-text)",
+    span: "md:col-span-1",
+  },
+  {
+    id: "imagen-a-pdf",
+    title: "Imagen a PDF",
+    description:
+      "Combina varias imágenes en un solo PDF y ordénalas arrastrándolas. Una página por imagen, a su tamaño exacto.",
+    href: "/imagen-a-pdf",
     icon: FileText,
     category: "Documentos",
     accent: "var(--ds-blue-text)",
     span: "md:col-span-1",
   },
   {
-    id: "video-converter",
-    title: "Video ⇄ GIF",
-    description: "Recorta videos y expórtalos como GIF, o convierte GIFs en video.",
-    href: "/video-converter",
-    icon: Video,
-    category: "Multimedia",
-    accent: "var(--ds-purple-text)",
-    span: "md:col-span-1",
-  },
-  {
-    id: "merge-pdf",
-    title: "Unificador PDF",
-    description: "Combina PDFs e imágenes en un solo documento paginado y reordenable.",
-    href: "/pdf-organizer?mode=merge",
+    id: "unir-pdf",
+    title: "Unir PDF",
+    description: "Combina varios PDFs e imágenes en un solo documento reordenable.",
+    href: "/unir-pdf",
     icon: Layers,
     category: "Documentos",
     accent: "var(--ds-blue-text)",
     span: "md:col-span-1",
   },
   {
-    id: "pdf-splitter",
-    title: "Separador PDF",
-    description: "Divide un PDF en paquetes: elige qué páginas van juntas y si salen como PDF o imágenes.",
-    href: "/pdf-organizer?mode=split",
+    id: "dividir-pdf",
+    title: "Dividir PDF",
+    description:
+      "Divide un PDF en paquetes: elige qué páginas van juntas y si salen como PDF o imágenes.",
+    href: "/dividir-pdf",
     icon: Scissors,
     category: "Documentos",
     accent: "var(--ds-blue-text)",
     span: "md:col-span-1",
   },
   {
-    id: "json-format",
+    id: "video-a-gif",
+    title: "Video a GIF",
+    description: "Recorta el fragmento que quieras de un video y expórtalo como GIF.",
+    href: "/video-a-gif",
+    icon: Video,
+    category: "Multimedia",
+    accent: "var(--ds-purple-text)",
+    span: "md:col-span-1",
+  },
+  {
+    id: "gif-a-video",
+    title: "GIF a video",
+    description: "Convierte un GIF animado en un video MP4, mucho más ligero.",
+    href: "/gif-a-video",
+    icon: Film,
+    category: "Multimedia",
+    accent: "var(--ds-purple-text)",
+    span: "md:col-span-1",
+  },
+  {
+    id: "formato-json",
     title: "Formato JSON",
-    description: "Formatea, valida y minifica JSON al instante.",
+    description: "Formatea, valida y minifica JSON al instante, sin enviarlo a ningún servidor.",
+    href: "/formato-json",
     icon: Code,
     category: "Desarrollo",
     accent: "var(--ds-amber-text)",
     span: "md:col-span-1",
-    soon: true,
   },
 ];
 
@@ -160,83 +187,54 @@ function CategoryTag({ label, accent }: { label: string; accent: string }) {
 function ToolCard({ tool }: { tool: Tool }) {
   const Icon = tool.icon;
 
-  const inner = (
-    <>
-      {/* hover glow tinted by the category accent */}
-      {!tool.soon && (
+  return (
+    <motion.div variants={item} className={tool.span}>
+      <Link
+        href={tool.href}
+        className={cn(
+          "group relative flex flex-col overflow-hidden p-5 md:p-6",
+          "rounded-panel min-h-[190px]",
+          tool.featured && "md:min-h-full rounded-hero",
+          "ou-card-interactive h-full w-full"
+        )}
+      >
+        {/* hover glow tinted by the category accent */}
         <div
           className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-500 group-hover:opacity-100"
           style={{
             background: `radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, ${tool.accent} 12%, transparent), transparent 60%)`,
           }}
         />
-      )}
 
-      <div className="relative z-10 flex items-start justify-between">
-        <IconWell icon={Icon} accent={tool.accent} large={tool.featured} />
-        {tool.soon ? (
-          <span className="ou-badge">
-            <Sparkles className="w-3 h-3" /> Próximamente
-          </span>
-        ) : (
+        <div className="relative z-10 flex items-start justify-between">
+          <IconWell icon={Icon} accent={tool.accent} large={tool.featured} />
           <span className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground-faint transition-all duration-300 group-hover:border-border-strong group-hover:text-foreground">
             <ArrowUpRight className="w-4 h-4" />
           </span>
-        )}
-      </div>
-
-      <div className="relative z-10 mt-auto pt-6">
-        <div className="mb-2">
-          <CategoryTag label={tool.category} accent={tool.accent} />
         </div>
-        <h2
-          className={cn(
-            "font-semibold tracking-tight text-foreground",
-            tool.featured ? "text-2xl md:text-3xl mb-2.5" : "text-lg mb-1.5"
-          )}
-        >
-          {tool.title}
-        </h2>
-        <p
-          className={cn(
-            "text-foreground-subtle leading-relaxed",
-            tool.featured ? "text-sm md:text-[15px] max-w-md" : "text-[13px]"
-          )}
-        >
-          {tool.description}
-        </p>
-      </div>
-    </>
-  );
 
-  const baseClass = cn(
-    "group relative flex flex-col overflow-hidden p-5 md:p-6",
-    "rounded-panel min-h-[190px]",
-    tool.featured && "md:min-h-full rounded-hero",
-    tool.span
-  );
-
-  if (tool.soon) {
-    return (
-      <motion.div
-        variants={item}
-        className={cn(
-          baseClass,
-          "border border-dashed border-border bg-surface/40 opacity-70"
-        )}
-      >
-        {inner}
-      </motion.div>
-    );
-  }
-
-  return (
-    <motion.div variants={item} className={tool.span}>
-      <Link
-        href={tool.href!}
-        className={cn(baseClass, "ou-card-interactive h-full w-full")}
-      >
-        {inner}
+        <div className="relative z-10 mt-auto pt-6">
+          <div className="mb-2">
+            <CategoryTag label={tool.category} accent={tool.accent} />
+          </div>
+          {/* h3, not h2: the page h1 and the section h2s live in the server content. */}
+          <h3
+            className={cn(
+              "font-semibold tracking-tight text-foreground",
+              tool.featured ? "text-2xl md:text-3xl mb-2.5" : "text-lg mb-1.5"
+            )}
+          >
+            {tool.title}
+          </h3>
+          <p
+            className={cn(
+              "text-foreground-subtle leading-relaxed",
+              tool.featured ? "text-sm md:text-[15px] max-w-md" : "text-[13px]"
+            )}
+          >
+            {tool.description}
+          </p>
+        </div>
       </Link>
     </motion.div>
   );
@@ -245,31 +243,29 @@ function ToolCard({ tool }: { tool: Tool }) {
 const HIGHLIGHTS = [
   { icon: ShieldCheck, label: "Privado", detail: "Nada se sube a un servidor" },
   { icon: Zap, label: "Instantáneo", detail: "Procesado en tu navegador" },
-  { icon: Code, label: "Open source", detail: "Utilidades abiertas" },
+  { icon: Code, label: "Open source", detail: "Licencia MIT, auditable" },
 ];
 
 export function HomeView() {
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-12 md:px-10 md:py-16">
-      {/* Header */}
-      <motion.header
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="mb-10 md:mb-12"
-      >
+      {/* Header. Deliberately NOT animated from opacity:0 — the h1 is the LCP
+          element, and fading it in makes LCP wait for framer-motion to hydrate. */}
+      <header className="mb-10 md:mb-12">
         <span className="ou-badge mb-5">
           <span className="w-1.5 h-1.5 rounded-full bg-success-text" />
           100% local · privado
         </span>
         <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground text-balance">
-          Open Utils
+          Utilidades de archivos que funcionan en tu navegador, sin subir nada
         </h1>
-        <p className="mt-3 max-w-xl text-base md:text-lg text-foreground-subtle text-pretty">
-          Una colección de utilidades rápidas y privadas. Elige una herramienta
-          para empezar — todo se procesa en tu navegador.
+        <p className="mt-4 max-w-2xl text-base md:text-lg text-foreground-subtle text-pretty">
+          Edita, convierte, une y divide PDF, imágenes y video sin registrarte y sin que
+          tus archivos salgan de tu equipo. Gratis, sin marca de agua y de código abierto.
         </p>
-      </motion.header>
+      </header>
+
+      <h2 className="sr-only">Herramientas disponibles</h2>
 
       {/* Bento grid */}
       <motion.div

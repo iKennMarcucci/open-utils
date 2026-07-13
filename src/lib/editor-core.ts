@@ -531,3 +531,89 @@ export const FONT_FAMILIES: { label: string; value: string }[] = [
   { label: "Comic Sans", value: "'Comic Sans MS', 'Comic Sans', cursive" },
   { label: "Impact", value: "Impact, Haettenschweiler, sans-serif" },
 ];
+
+/** Shared by both editors (PDF and image) — neither needs a PDF library. */
+export interface EditorError {
+  title: string;
+  message: string;
+  suggestion: string;
+}
+
+/**
+ * Rotates a set of annotations by ±90° within a page whose current pixel size is
+ * (w × h), so they stay pinned to the content as the page turns. Box-like shapes
+ * stay axis-aligned (their bounding box is rotated); text stays upright.
+ */
+export function rotateAnnotations(
+  anns: Annotation[],
+  w: number,
+  h: number,
+  clockwise: boolean
+): Annotation[] {
+  // Map a point from a w×h space into the rotated h×w space.
+  const map = (x: number, y: number): [number, number] =>
+    clockwise ? [h - y, x] : [y, w - x];
+  // New page dimensions after a 90° turn (either direction swaps w/h).
+  const nw = h;
+  const nh = w;
+  const clamp = (v: number, max: number) => Math.max(0, Math.min(v, max));
+
+  return anns.map((a) => {
+    switch (a.type) {
+      case "pen":
+      case "highlighter": {
+        const pts: number[] = [];
+        for (let i = 0; i < a.points.length; i += 2) {
+          const [nx, ny] = map(a.points[i], a.points[i + 1]);
+          pts.push(nx, ny);
+        }
+        return { ...a, points: pts };
+      }
+      case "line":
+      case "arrow": {
+        const [x1, y1] = map(a.x1, a.y1);
+        const [x2, y2] = map(a.x2, a.y2);
+        return { ...a, x1, y1, x2, y2 };
+      }
+      case "rect":
+      case "ellipse":
+      case "image": {
+        const [ax, ay] = map(a.x, a.y);
+        const [bx, by] = map(a.x + a.w, a.y + a.h);
+        return {
+          ...a,
+          x: Math.min(ax, bx),
+          y: Math.min(ay, by),
+          w: Math.abs(bx - ax),
+          h: Math.abs(by - ay),
+        };
+      }
+      case "text": {
+        // Text can't visually rotate (glyphs stay upright); move its anchor
+        // with the content and clamp it onto the newly-sized page.
+        const [nx, ny] = map(a.x, a.y);
+        return { ...a, x: clamp(nx, nw), y: clamp(ny, nh) };
+      }
+    }
+  });
+}
+
+export function loadImageForInsertion(
+  file: File
+): Promise<{ src: string; width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) {
+      return reject(new Error("El archivo no es una imagen."));
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const src = reader.result as string;
+      const img = new Image();
+      img.onload = () => resolve({ src, width: img.naturalWidth, height: img.naturalHeight });
+      img.onerror = () => reject(new Error("No se pudo leer la imagen."));
+      img.src = src;
+    };
+    reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
+    reader.readAsDataURL(file);
+  });
+}

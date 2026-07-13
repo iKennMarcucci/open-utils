@@ -1,17 +1,14 @@
 import { PDFDocument } from "pdf-lib";
 import { saveAs } from "file-saver";
 import { pdfjsLib } from "./pdfjs";
+import { yieldToMain } from "./scheduler";
 import {
   type Annotation,
+  type EditorError,
   drawAnnotation,
   moveAnn,
 } from "./editor-core";
 
-export interface EditorError {
-  title: string;
-  message: string;
-  suggestion: string;
-}
 
 export interface EditablePage {
   /** Stable id, independent of position, used to key annotations & history. */
@@ -102,6 +99,11 @@ export async function loadPdfForEditing(file: File): Promise<EditablePdf> {
         editScale,
         nativeRotation,
       });
+
+      // Rendering every page of a large PDF is one long task on the main thread:
+      // while it runs, the tab is frozen. Yielding lets the browser paint and
+      // respond between pages (INP).
+      await yieldToMain();
     }
 
     await doc.cleanup();
@@ -129,65 +131,6 @@ export async function renderPageBitmap(
   const bitmap = await createImageBitmap(canvas);
   await doc.cleanup();
   return { bitmap, width, height };
-}
-
-/**
- * Rotates a set of annotations by ±90° within a page whose current pixel size
- * is (w × h), so they stay pinned to the content as the page turns. Box-like
- * shapes stay axis-aligned (their bounding box is rotated); text stays upright.
- */
-export function rotateAnnotations(
-  anns: Annotation[],
-  w: number,
-  h: number,
-  clockwise: boolean
-): Annotation[] {
-  // Map a point from a w×h space into the rotated h×w space.
-  const map = (x: number, y: number): [number, number] =>
-    clockwise ? [h - y, x] : [y, w - x];
-  // New page dimensions after a 90° turn (either direction swaps w/h).
-  const nw = h;
-  const nh = w;
-  const clamp = (v: number, max: number) => Math.max(0, Math.min(v, max));
-
-  return anns.map((a) => {
-    switch (a.type) {
-      case "pen":
-      case "highlighter": {
-        const pts: number[] = [];
-        for (let i = 0; i < a.points.length; i += 2) {
-          const [nx, ny] = map(a.points[i], a.points[i + 1]);
-          pts.push(nx, ny);
-        }
-        return { ...a, points: pts };
-      }
-      case "line":
-      case "arrow": {
-        const [x1, y1] = map(a.x1, a.y1);
-        const [x2, y2] = map(a.x2, a.y2);
-        return { ...a, x1, y1, x2, y2 };
-      }
-      case "rect":
-      case "ellipse":
-      case "image": {
-        const [ax, ay] = map(a.x, a.y);
-        const [bx, by] = map(a.x + a.w, a.y + a.h);
-        return {
-          ...a,
-          x: Math.min(ax, bx),
-          y: Math.min(ay, by),
-          w: Math.abs(bx - ax),
-          h: Math.abs(by - ay),
-        };
-      }
-      case "text": {
-        // Text can't visually rotate (glyphs stay upright); move its anchor
-        // with the content and clamp it onto the newly-sized page.
-        const [nx, ny] = map(a.x, a.y);
-        return { ...a, x: clamp(nx, nw), y: clamp(ny, nh) };
-      }
-    }
-  });
 }
 
 /** Draws annotations only (no background) onto a transparent canvas at scale. */
@@ -298,25 +241,12 @@ export function downloadPdf(blob: Blob, sourceName: string) {
 }
 
 /** Loads an image file to a data URL + natural size, for insertion. */
-export function loadImageForInsertion(
-  file: File
-): Promise<{ src: string; width: number; height: number }> {
-  return new Promise((resolve, reject) => {
-    if (!file.type.startsWith("image/")) {
-      return reject(new Error("El archivo no es una imagen."));
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const src = reader.result as string;
-      const img = new Image();
-      img.onload = () => resolve({ src, width: img.naturalWidth, height: img.naturalHeight });
-      img.onerror = () => reject(new Error("No se pudo leer la imagen."));
-      img.src = src;
-    };
-    reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
-    reader.readAsDataURL(file);
-  });
-}
 
 // Re-export for convenience so UIs import from one place.
 export { moveAnn };
+
+// These three live in `editor-core` (they are PDF-agnostic). Re-exported here so
+// existing importers of `@/lib/pdf-editor` keep working — but the image editor
+// must import them from `editor-core` directly, or it drags pdf-lib + pdfjs
+// (hundreds of KB it never uses) into its bundle.
+export { rotateAnnotations, loadImageForInsertion, type EditorError } from "./editor-core";

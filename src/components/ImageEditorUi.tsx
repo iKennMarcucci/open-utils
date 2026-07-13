@@ -28,15 +28,14 @@ import {
   DEFAULT_STYLE,
   renderScene,
   preloadImages,
+  loadImageForInsertion,
+  rotateAnnotations,
   type Annotation,
   type Style,
   type Tool,
-} from "@/lib/editor-core";
-import {
-  loadImageForInsertion,
-  rotateAnnotations,
   type EditorError,
-} from "@/lib/pdf-editor";
+} from "@/lib/editor-core";
+
 
 const LAYER = "img";
 
@@ -259,7 +258,7 @@ export function ImageEditorUi() {
         <div className="w-full max-w-3xl">
           <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-center gap-4 mb-10">
             <Brush className="w-7 h-7 text-foreground-muted" />
-            <h1 className="text-4xl font-semibold tracking-tight text-foreground">Editor de Imagen</h1>
+            <h2 className="text-4xl font-semibold tracking-tight text-foreground">Editor de Imagen</h2>
           </motion.div>
 
           {isLoading ? (

@@ -23,7 +23,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
-import { REPO_URL, GithubIcon } from "@/components/Footer";
+import { GithubIcon } from "@/components/GithubIcon";
+import { REPO_URL } from "@/lib/seo/site";
 
 const RAIL_WIDTH = 72;
 
@@ -98,40 +99,40 @@ export function Sidebar() {
       id: "editor",
       name: editorMode === "pdf" ? "Editor PDF" : "Editor IMG",
       icon: editorMode === "pdf" ? Pencil : Brush,
-      href: editorMode === "pdf" ? "/pdf-editor" : "/image-editor",
-      matchPath: editorMode === "pdf" ? "/pdf-editor" : "/image-editor",
+      href: editorMode === "pdf" ? "/editor-pdf" : "/editor-imagen",
+      matchPath: editorMode === "pdf" ? "/editor-pdf" : "/editor-imagen",
       hasToggle: true,
       onToggle: handleToggleEditorMode,
       isFlipped: editorMode === "img",
     },
     {
       id: "pdf-converter",
-      name: pdfToolMode === "pdf-to-img" ? "PDF a IMG" : "IMG a PDF",
+      name: pdfToolMode === "pdf-to-img" ? "PDF a imagen" : "Imagen a PDF",
       // Icon reflects the conversion target: image for PDF→IMG, PDF for IMG→PDF.
       icon: pdfToolMode === "pdf-to-img" ? ImageIcon : FileText,
-      href: `/pdf-converter?mode=${pdfToolMode}`,
-      matchPath: "/pdf-converter",
+      href: pdfToolMode === "pdf-to-img" ? "/pdf-a-imagen" : "/imagen-a-pdf",
+      matchPath: pdfToolMode === "pdf-to-img" ? "/pdf-a-imagen" : "/imagen-a-pdf",
       hasToggle: true,
       onToggle: handleTogglePdfMode,
       isFlipped: pdfToolMode === "img-to-pdf",
     },
     {
       id: "video-converter",
-      name: videoToolMode === "video-to-gif" ? "Video a GIF" : "GIF a Video",
+      name: videoToolMode === "video-to-gif" ? "Video a GIF" : "GIF a video",
       // Icon reflects the target: GIF for Video→GIF, video for GIF→Video.
       icon: videoToolMode === "video-to-gif" ? ImagePlay : Video,
-      href: `/video-converter?mode=${videoToolMode}`,
-      matchPath: "/video-converter",
+      href: videoToolMode === "video-to-gif" ? "/video-a-gif" : "/gif-a-video",
+      matchPath: videoToolMode === "video-to-gif" ? "/video-a-gif" : "/gif-a-video",
       hasToggle: true,
       onToggle: handleToggleVideoMode,
       isFlipped: videoToolMode === "gif-to-video",
     },
     {
       id: "pdf-organizer",
-      name: pdfOrgMode === "merge" ? "Unificador PDF" : "Separador PDF",
+      name: pdfOrgMode === "merge" ? "Unir PDF" : "Dividir PDF",
       icon: pdfOrgMode === "merge" ? Layers : Scissors,
-      href: `/pdf-organizer?mode=${pdfOrgMode}`,
-      matchPath: "/pdf-organizer",
+      href: pdfOrgMode === "merge" ? "/unir-pdf" : "/dividir-pdf",
+      matchPath: pdfOrgMode === "merge" ? "/unir-pdf" : "/dividir-pdf",
       hasToggle: true,
       onToggle: handleTogglePdfOrgMode,
       isFlipped: pdfOrgMode === "split",

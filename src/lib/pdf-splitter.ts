@@ -2,6 +2,7 @@ import { PDFDocument } from "pdf-lib";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { pdfjsLib } from "./pdfjs";
+import { yieldToMain } from "./scheduler";
 
 export interface SplitError {
   title: string;
@@ -23,7 +24,8 @@ export interface SplitPackage {
 
 export interface LoadedPdf {
   numPages: number;
-  /** JPEG data URLs, one per page, for the picker grid. */
+  /** Object URLs of JPEG thumbnails, one per page, for the picker grid.
+   *  Release them with `releaseThumbnails` when the document is dropped. */
   thumbnails: string[];
   /** Original file bytes, reused for export. */
   bytes: ArrayBuffer;
@@ -109,7 +111,25 @@ export async function loadPdf(file: File): Promise<LoadedPdf> {
       canvas.height = viewport.height;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await page.render({ canvasContext: ctx, viewport } as any).promise;
-      thumbnails.push(canvas.toDataURL("image/jpeg", 0.7));
+
+      // `toDataURL` encodes synchronously and base64-inflates the result by ~33%.
+      // On a 100 MB, several-hundred-page PDF that froze the tab for seconds and
+      // held every thumbnail in memory as a string. `toBlob` encodes off the main
+      // thread and an object URL is a pointer, not a copy.
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (b) => (b ? resolve(b) : reject(new Error("No se pudo generar la miniatura"))),
+          "image/jpeg",
+          0.7
+        );
+      });
+      thumbnails.push(URL.createObjectURL(blob));
+
+      canvas.width = 0;
+      canvas.height = 0;
+
+      // Let the browser paint and stay responsive between pages (INP).
+      await yieldToMain();
     }
 
     await doc.cleanup();
@@ -250,4 +270,13 @@ export async function downloadAllAsZip(
 
 export function saveResultFile(file: SplitResultFile): void {
   saveAs(file.blob, file.name);
+}
+
+/**
+ * Thumbnails are object URLs now (they used to be base64 data URLs, which the GC
+ * reclaimed on its own). An object URL pins its blob until it is revoked, so the
+ * UI must release them when it drops a document.
+ */
+export function releaseThumbnails(thumbnails: string[]) {
+  thumbnails.forEach((url) => URL.revokeObjectURL(url));
 }

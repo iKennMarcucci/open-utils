@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
   RefreshCw,
   UploadCloud,
   FileText,
-  Image as ImageIcon,
   Download,
   X,
   AlertCircle,
@@ -19,18 +18,18 @@ import { cn } from "@/lib/utils";
 import {
   validateFile,
   pdfToImages,
-  imageToPdf,
-  type ConversionMode,
+  type ImageFormat,
   type ConversionResult,
   type ConversionError,
 } from "@/lib/converter";
 
+/**
+ * PDF → image. The opposite direction lives in its own route and component
+ * (`ImageToPdfUi`), because it takes *many* images and lets you order them —
+ * a different enough interaction that sharing one component only tangled both.
+ */
 export function ConverterUi() {
-  const searchParams = useSearchParams();
-  const initialModeParam = searchParams?.get("mode") as ConversionMode | null;
-  const initialMode = initialModeParam === "img-to-pdf" ? "img-to-pdf" : "pdf-to-img";
-
-  const [mode, setMode] = useState<ConversionMode>(initialMode);
+  const [format, setFormat] = useState<ImageFormat>("jpeg");
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [results, setResults] = useState<ConversionResult[] | null>(null);
@@ -41,80 +40,89 @@ export function ConverterUi() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  /** Object URLs are leaked otherwise — one per page, on every conversion. */
+  const revokeResults = (list: ConversionResult[] | null) => {
+    list?.forEach((r) => URL.revokeObjectURL(r.url));
+  };
+
   const resetState = () => {
     setFile(null);
-    setFilePreview(null);
-    setResults(null);
+    setFilePreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setResults((prev) => {
+      revokeResults(prev);
+      return null;
+    });
     setError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   useEffect(() => {
-    if (!searchParams) return;
-    const urlMode = searchParams.get("mode") as ConversionMode | null;
-    if (urlMode === "img-to-pdf" || urlMode === "pdf-to-img") {
-      if (mode !== urlMode) {
-        setMode(urlMode);
-        resetState();
-      }
-    }
-  }, [searchParams]);
-
-
-  const handleToggleMode = () => {
-    setMode((prev) => (prev === "pdf-to-img" ? "img-to-pdf" : "pdf-to-img"));
-    resetState();
-  };
-
+    return () => {
+      revokeResults(results);
+      if (filePreview) URL.revokeObjectURL(filePreview);
+    };
+    // Cleanup on unmount only; `results`/`filePreview` are read at teardown.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleFile = async (selectedFile: File) => {
     setError(null);
-    
-    // Validate file based on mode
-    const validationError = validateFile(selectedFile, mode);
+
+    const validationError = validateFile(selectedFile, "pdf-to-img");
     if (validationError) {
       setError(validationError);
       return;
     }
 
     setFile(selectedFile);
-    setResults(null);
+    setResults((prev) => {
+      revokeResults(prev);
+      return null;
+    });
 
-    // Create preview for input
     if (selectedFile.type.startsWith("image/")) {
       const url = URL.createObjectURL(selectedFile);
       setFilePreview(url);
     } else if (selectedFile.type === "application/pdf") {
-      setFilePreview(null); // Will just show a PDF icon for simplicity
+      setFilePreview(null); // A PDF icon stands in for the preview.
     }
 
-    // Auto-convert
-    await handleConvert(selectedFile, mode);
+    await handleConvert(selectedFile, format);
   };
 
-  const handleConvert = async (fileToConvert: File, currentMode: ConversionMode) => {
+  const handleConvert = async (fileToConvert: File, imageFormat: ImageFormat) => {
     setIsConverting(true);
     try {
-      if (currentMode === "pdf-to-img") {
-        const res = await pdfToImages(fileToConvert);
-        setResults(res);
-      } else {
-        const res = await imageToPdf(fileToConvert);
-        setResults([res]);
-      }
-    } catch (err: any) {
+      const res = await pdfToImages(fileToConvert, imageFormat);
+      setResults(res);
+    } catch (err: unknown) {
+      const known = err as ConversionError;
       setError(
-        err.title
-          ? err
+        known?.title
+          ? known
           : {
-              title: "Conversion Error",
-              message: "An unknown error occurred during conversion.",
-              suggestion: "Please try again with a different file.",
+              title: "Error de conversión",
+              message: "Ha ocurrido un error inesperado durante la conversión.",
+              suggestion: "Inténtalo de nuevo con otro archivo.",
             }
       );
     } finally {
       setIsConverting(false);
     }
+  };
+
+  /** Re-runs the conversion when the user picks a different output format. */
+  const handleFormatChange = async (next: ImageFormat) => {
+    if (next === format) return;
+    setFormat(next);
+    setResults((prev) => {
+      revokeResults(prev);
+      return null;
+    });
+    if (file) await handleConvert(file, next);
   };
 
   const onDragOver = (e: React.DragEvent) => {
@@ -154,22 +162,46 @@ export function ConverterUi() {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-center space-x-4"
         >
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-            {mode === "pdf-to-img" ? "PDF ⇄ IMG" : "IMG ⇄ PDF"}
-          </h1>
-          <button
-            onClick={handleToggleMode}
+          <h2 className="text-4xl font-semibold tracking-tight text-foreground">
+            PDF a imagen
+          </h2>
+          <Link
+            href="/imagen-a-pdf"
+            title="Cambiar a Imagen a PDF"
+            aria-label="Cambiar a Imagen a PDF"
             className="p-2 rounded-full hover:bg-surface-strong/80 transition-colors text-foreground-muted hover:text-foreground"
-            title="Switch Conversion Mode"
           >
-            <RefreshCw
-              className={cn(
-                "w-6 h-6 transition-transform duration-500",
-                mode === "img-to-pdf" && "rotate-180"
-              )}
-            />
-          </button>
+            <RefreshCw className="w-6 h-6 transition-transform duration-500" />
+          </Link>
         </motion.div>
+
+        {/* Output format */}
+        <div className="flex items-center justify-center gap-2">
+            <span className="ou-label">Formato de salida</span>
+            <div
+              role="radiogroup"
+              aria-label="Formato de salida"
+              className="flex items-center gap-1 rounded-control border border-border bg-surface p-1"
+            >
+              {(["jpeg", "png"] as const).map((f) => (
+                <button
+                  key={f}
+                  role="radio"
+                  aria-checked={format === f}
+                  onClick={() => handleFormatChange(f)}
+                  disabled={isConverting}
+                  className={cn(
+                    "px-3 py-1 rounded-md text-xs font-medium transition-colors disabled:opacity-50",
+                    format === f
+                      ? "bg-surface-strong text-foreground"
+                      : "text-foreground-faint hover:text-foreground"
+                  )}
+                >
+                  {f === "jpeg" ? "JPG" : "PNG"}
+                </button>
+              ))}
+          </div>
+        </div>
 
         {/* Main Workspace */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -181,7 +213,7 @@ export function ConverterUi() {
             className="flex flex-col h-full"
           >
             <label className="text-sm font-medium text-foreground-muted mb-3 ml-1 uppercase tracking-wider">
-              Input
+              Entrada
             </label>
             <div
               onDragOver={onDragOver}
@@ -206,11 +238,7 @@ export function ConverterUi() {
                   }
                 }}
                 className="hidden"
-                accept={
-                  mode === "pdf-to-img"
-                    ? "application/pdf"
-                    : "image/png,image/jpeg,image/webp,image/bmp,image/gif"
-                }
+                accept="application/pdf"
               />
 
               <AnimatePresence mode="wait">
@@ -227,22 +255,14 @@ export function ConverterUi() {
                     </div>
                     <div>
                       <p className="text-lg font-medium text-foreground">
-                        Drop your file here
+                        Arrastra tu archivo aquí
                       </p>
                       <p className="text-sm text-foreground-subtle mt-1">
-                        or click to browse
+                        o haz clic para elegirlo
                       </p>
                     </div>
                     <div className="text-xs text-foreground-faint mt-4 flex items-center gap-2">
-                      {mode === "pdf-to-img" ? (
-                        <>
-                          <FileText className="w-4 h-4" /> Supports PDF up to 50MB
-                        </>
-                      ) : (
-                        <>
-                          <ImageIcon className="w-4 h-4" /> Supports PNG, JPG, WebP
-                        </>
-                      )}
+                      <FileText className="w-4 h-4" /> Admite PDF de hasta 50 MB
                     </div>
                   </motion.div>
                 ) : (
@@ -257,7 +277,7 @@ export function ConverterUi() {
                       {filePreview ? (
                         <img
                           src={filePreview}
-                          alt="File Preview"
+                          alt="Vista previa del archivo"
                           className="w-full h-full object-contain p-4 opacity-50 blur-[2px] hover:opacity-100 hover:blur-none transition-all duration-500"
                         />
                       ) : (
@@ -303,14 +323,14 @@ export function ConverterUi() {
           >
             <div className="flex justify-between items-end mb-3 ml-1">
               <label className="text-sm font-medium text-foreground-muted uppercase tracking-wider">
-                Output
+                Salida
               </label>
               {results && results.length > 1 && (
                 <button 
                   onClick={handleDownloadAll}
                   className="text-xs text-foreground bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors flex items-center gap-1.5"
                 >
-                  <Download className="w-3 h-3" /> Download All ({results.length})
+                  <Download className="w-3 h-3" /> Descargar todo ({results.length})
                 </button>
               )}
             </div>
@@ -331,7 +351,7 @@ export function ConverterUi() {
                   >
                     <div className="w-12 h-12 border-[3px] border-border border-t-white rounded-full animate-spin" />
                     <p className="mt-6 text-sm font-medium text-foreground-muted animate-pulse">
-                      Processing...
+                      Procesando…
                     </p>
                   </motion.div>
                 ) : !results ? (
@@ -346,7 +366,7 @@ export function ConverterUi() {
                       <CheckCircle2 className="w-8 h-8 text-foreground-faint" />
                     </div>
                     <p className="text-sm font-medium text-foreground-subtle">
-                      Awaiting file
+                      Esperando archivo
                     </p>
                   </motion.div>
                 ) : (
@@ -390,12 +410,12 @@ export function ConverterUi() {
                              onClick={() => handleDownload(result)}
                              className="bg-white hover:bg-neutral-200 text-black px-4 py-2 rounded-full text-sm font-medium transition-transform hover:scale-105 flex items-center gap-2"
                            >
-                             <Download className="w-4 h-4" /> Download
+                             <Download className="w-4 h-4" /> Descargar
                            </button>
                         </div>
                         {results.length > 1 && (
                           <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] text-foreground/70 border border-white/10">
-                            Pg {idx + 1}
+                            Pág. {idx + 1}
                           </div>
                         )}
                       </div>
@@ -479,7 +499,7 @@ export function ConverterUi() {
                    onClick={() => handleDownload(fullscreenResult)}
                    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-foreground px-4 py-2 rounded-full text-sm font-medium transition-colors"
                  >
-                   <Download className="w-4 h-4" /> Download
+                   <Download className="w-4 h-4" /> Descargar
                  </button>
                  <button
                    onClick={() => setFullscreenResult(null)}

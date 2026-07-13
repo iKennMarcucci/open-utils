@@ -21,16 +21,18 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "node scripts/copy-ffmpeg.mjs",
-    "setup:ffmpeg": "node scripts/copy-ffmpeg.mjs"
+    "setup:ffmpeg": "node scripts/copy-ffmpeg.mjs",
+    "gen:logo": "node scripts/generate-logo.mjs"
   },
   "dependencies": {
     "@ffmpeg/core": "^0.12.6",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "canvas-size": "^2.0.0",
     "clsx": "^2.1.1",
     "file-saver": "^2.0.5",
-    "framer-motion": "^12.38.0",
     "jszip": "^3.10.1",
     "lucide-react": "^1.7.0",
     "motion": "^12.38.0",

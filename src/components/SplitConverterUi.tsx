@@ -31,6 +31,7 @@ import {
   type PackageOutput,
   type SplitResultGroup,
   type SplitError,
+  releaseThumbnails,
 } from "@/lib/pdf-splitter";
 
 const PKG_COLORS = [
@@ -90,7 +91,12 @@ export function SplitConverterUi() {
   const resetAll = () => {
     revokeResults();
     setResults(null);
-    setDoc(null);
+    // Thumbnails are object URLs: dropping the reference isn't enough, the
+    // blob stays alive until it's revoked.
+    setDoc((prev) => {
+      if (prev) releaseThumbnails(prev.thumbnails);
+      return null;
+    });
     setPackages([]);
     setActiveId("");
     setError(null);
@@ -105,7 +111,10 @@ export function SplitConverterUi() {
     setResults(null);
     try {
       const loaded = await loadPdf(file);
-      setDoc(loaded);
+      setDoc((prev) => {
+        if (prev) releaseThumbnails(prev.thumbnails);
+        return loaded;
+      });
       pkgCounter.current = 1;
       const first = makePackage();
       setPackages([first]);
@@ -218,12 +227,12 @@ export function SplitConverterUi() {
           className="flex items-center justify-center space-x-4 mb-10"
         >
           <Scissors className="w-7 h-7 text-foreground-muted" />
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+          <h2 className="text-4xl font-semibold tracking-tight text-foreground">
             Separador PDF
-          </h1>
+          </h2>
           <button
-            onClick={() => router.push("/pdf-organizer?mode=merge")}
-            title="Cambiar a Unificador PDF"
+            onClick={() => router.push("/unir-pdf")}
+            title="Cambiar a Unir PDF"
             className="p-2 rounded-full hover:bg-surface-strong transition-colors text-foreground-muted hover:text-foreground"
           >
             <RefreshCw className="w-6 h-6 transition-transform duration-500" />

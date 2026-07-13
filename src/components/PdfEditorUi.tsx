@@ -377,7 +377,7 @@ export function PdfEditorUi() {
             className="flex items-center justify-center gap-4 mb-10"
           >
             <Pencil className="w-7 h-7 text-foreground-muted" />
-            <h1 className="text-4xl font-semibold tracking-tight text-foreground">Editor de PDF</h1>
+            <h2 className="text-4xl font-semibold tracking-tight text-foreground">Editor de PDF</h2>
           </motion.div>
 
           {isLoading ? (

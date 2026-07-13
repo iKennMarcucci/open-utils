@@ -137,12 +137,12 @@ export function MergeConverterUi() {
           className="flex items-center justify-center space-x-4"
         >
           <Layers className="w-7 h-7 text-foreground-muted" />
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+          <h2 className="text-4xl font-semibold tracking-tight text-foreground">
             Unificador PDF
-          </h1>
+          </h2>
           <button
-            onClick={() => router.push("/pdf-organizer?mode=split")}
-            title="Cambiar a Separar de PDF"
+            onClick={() => router.push("/dividir-pdf")}
+            title="Cambiar a Dividir PDF"
             className="p-2 rounded-full hover:bg-surface-strong transition-colors text-foreground-muted hover:text-foreground"
           >
             <RefreshCw className="w-6 h-6 transition-transform duration-500" />
