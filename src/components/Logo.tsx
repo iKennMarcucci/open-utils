@@ -1,8 +1,9 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Open Utils logomark — a compact 2×2 "bento" of tiles, echoing the
- * home grid. Monochrome by default so it inherits the surrounding color.
+ * Open Utils logomark — a chevron-and-underscore ">_" prompt glyph.
+ * The disc uses `bg-foreground` and the glyph `currentColor`, so it stays
+ * legible in both themes without a second asset.
  */
 export function Logo({
   className,
@@ -14,23 +15,27 @@ export function Logo({
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center rounded-[8px] bg-foreground text-background",
+        "inline-flex items-center justify-center rounded-full bg-foreground text-background",
         className
       )}
       style={{ width: size, height: size }}
       aria-hidden
     >
       <svg
-        width={size * 0.6}
-        height={size * 0.6}
-        viewBox="0 0 24 24"
+        width={size}
+        height={size}
+        viewBox="0 0 64 64"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor" />
-        <rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor" opacity="0.55" />
-        <rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor" opacity="0.55" />
-        <rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor" />
+        <path
+          d="M15.8136 19.3444C16.0575 18.5291 16.4141 18.4203 17.0213 18.9287C22.0116 23.1063 27.0014 27.2844 31.9903 31.4637C32.5743 31.9529 32.581 32.2741 31.9956 32.7655C27.8231 36.2678 23.6471 39.7658 19.4722 43.2651C18.6277 43.973 17.7947 44.6955 16.9298 45.3774C16.7507 45.5186 16.4049 45.6194 16.2234 45.5397C16.0323 45.4558 15.836 45.1356 15.8313 44.9146C15.7975 43.312 15.7848 41.7077 15.8351 40.1061C15.8442 39.8174 16.1195 39.4741 16.365 39.2656C19.0284 37.0034 21.7106 34.7633 24.3869 32.5164C24.5259 32.3997 24.6585 32.2755 24.8386 32.1152C23.4214 30.9235 22.0419 29.7616 20.6603 28.6022C19.2105 27.3856 17.7641 26.1647 16.3038 24.9607C15.955 24.6731 15.7929 24.3583 15.8007 23.895C15.8259 22.3963 15.8119 20.8969 15.8136 19.3444Z"
+          fill="currentColor"
+        />
+        <path
+          d="M43.5 45.6254C40.1071 45.6255 36.7767 45.6258 33.4463 45.6252C32.5835 45.6251 32.4809 45.5216 32.4797 44.6509C32.4782 43.5477 32.4953 42.4442 32.4731 41.3415C32.4611 40.7449 32.7425 40.5179 33.3017 40.5182C38.0683 40.5204 42.8348 40.5203 47.6014 40.5166C48.1757 40.5162 48.4406 40.7985 48.4401 41.3584C48.4388 42.524 48.4408 43.6897 48.4354 44.8553C48.4329 45.3889 48.1789 45.6396 47.6213 45.6317C46.2686 45.6127 44.9155 45.6255 43.5 45.6254Z"
+          fill="currentColor"
+        />
       </svg>
     </span>
   );
