@@ -2,6 +2,17 @@
   "name": "open-utils",
   "version": "0.1.0",
   "private": true,
+  "description": "Utilidades de archivos rápidas, locales y privadas — todo el procesamiento ocurre en el navegador.",
+  "license": "MIT",
+  "author": "Kenn Marcucci",
+  "homepage": "https://github.com/iKennMarcucci/open-utils#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iKennMarcucci/open-utils.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iKennMarcucci/open-utils/issues"
+  },
   "scripts": {
     "predev": "node scripts/copy-ffmpeg.mjs",
     "dev": "next dev",

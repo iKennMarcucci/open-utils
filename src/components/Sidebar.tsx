@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
+import { REPO_URL, GithubIcon } from "@/components/Footer";
 
 const RAIL_WIDTH = 72;
 
@@ -291,7 +292,23 @@ export function Sidebar() {
         </nav>
 
         {/* Footer — trust badge when expanded, expand control when collapsed */}
-        <div className="p-3 border-t border-border shrink-0">
+        <div className="p-3 border-t border-border shrink-0 space-y-2">
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Código fuente en GitHub"
+            aria-label="Código fuente en GitHub"
+            className={cn(
+              "flex items-center h-9 rounded-control text-foreground-muted hover:bg-surface hover:text-foreground transition-colors",
+              isCollapsed ? "justify-center px-0" : "gap-3 px-3"
+            )}
+          >
+            <GithubIcon className="w-[18px] h-[18px] shrink-0" />
+            {!isCollapsed && (
+              <span className="whitespace-nowrap font-medium text-sm">Código fuente</span>
+            )}
+          </a>
           {isCollapsed ? (
             <button
               onClick={() => setIsCollapsed(false)}
