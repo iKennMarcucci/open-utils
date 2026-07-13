@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | grep -qE 'src/(app|components|lib/seo)/' && jq -n '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:\"Has tocado una ruta o un componente de Open Utils. Este sitio vive del buscador: antes de dar el cambio por terminado, (1) si has añadido o cambiado una herramienta —o lo que una herramienta hace— actualiza src/lib/seo/tools.ts (title, description, h1, features, steps, FAQ): es la fuente única que alimenta a la vez el texto visible y el JSON-LD; (2) comprueba contra el código que no estás prometiendo nada que la herramienta no haga; (3) ejecuta `npm run seo:check`. Reglas completas en AGENTS.md, sección «SEO: obligatorio en todo cambio».\"}}' || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "out=$(npm run --silent seo:check 2>&1) || jq -n --arg r \"$out\" '{decision:\"block\",reason:(\"`npm run seo:check` ha fallado. No termines la sesión con el SEO roto — este sitio depende del buscador.\\n\\n\" + $r + \"\\n\\nArréglalo, o explica al usuario por qué no se puede.\")}'",
+            "timeout": 60,
+            "statusMessage": "Comprobando SEO…"
+          }
+        ]
+      }
+    ]
+  }
+}

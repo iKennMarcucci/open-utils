@@ -22,7 +22,9 @@
     "lint": "eslint",
     "postinstall": "node scripts/copy-ffmpeg.mjs",
     "setup:ffmpeg": "node scripts/copy-ffmpeg.mjs",
-    "gen:logo": "node scripts/generate-logo.mjs"
+    "gen:logo": "node scripts/generate-logo.mjs",
+    "seo:check": "node --no-warnings scripts/seo-check.mjs",
+    "seo:check:live": "node --no-warnings scripts/seo-check.mjs --live"
   },
   "dependencies": {
     "@ffmpeg/core": "^0.12.6",
