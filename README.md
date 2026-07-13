@@ -84,13 +84,7 @@ lucide-react
 
 ## Sistema de diseño
 
-Open Utils usa un sistema de diseño construido sobre el
-[Geist Design System](https://vercel.com/geist/introduction) de Vercel: superficies
-monocromas, un único acento azul, bordes sutiles de 1px, radios ajustados y la
-tipografía Geist. Los tokens viven en [`src/app/globals.css`](src/app/globals.css)
-y se exponen a Tailwind v4 vía `@theme inline`, junto con los primitivos compartidos
-(`.ou-card`, `.ou-btn`, `.ou-dropzone`, `.ou-label`, `.ou-badge`). La página de inicio
-organiza las herramientas en un **bento grid** por categoría.
+Open Utils utiliza un sistema de diseño independiente **inspirado estéticamente** en el minimalismo del [Geist Design System](https://vercel.com/geist/introduction) de Vercel: superficies monocromas, un único acento azul, bordes sutiles de 1px, radios ajustados y el uso legítimo de la tipografía de código abierto Geist (bajo licencia SIL OFL). Todos los tokens han sido desarrollados de manera propia, viven en [`src/app/globals.css`](src/app/globals.css) y se exponen a Tailwind v4 vía `@theme inline`, junto con los primitivos compartidos (`.ou-card`, `.ou-btn`, `.ou-dropzone`, `.ou-label`, `.ou-badge`). La página de inicio organiza las herramientas en un **bento grid** por categoría.
 
 La guía completa está en [`docs/`](docs/) — **léela antes de escribir o modificar UI**:
 
@@ -133,3 +127,7 @@ Los reportes de errores y las ideas de nuevas herramientas son bienvenidos en
 ## Licencia
 
 [MIT](LICENSE) © Kenn Marcucci
+
+---
+
+> **Aviso de exención de responsabilidad:** Open Utils es un proyecto de código abierto totalmente independiente. Los nombres de productos, logotipos y marcas comerciales como Vercel, Next.js y Geist mencionados en este repositorio pertenecen a sus respectivos propietarios y se citan únicamente con fines de referencia estética, de dependencias técnicas o de atribución de inspiración visual. Este proyecto no está afiliado, patrocinado ni respaldado por dichas entidades.
