@@ -22,6 +22,9 @@ const APP = join(ROOT, "src", "app");
 const { TOOL_ORDER, TOOLS_SEO, HOME_FAQS } = await import(
   join(ROOT, "src", "lib", "seo", "tools.ts")
 );
+const { CATEGORY_ORDER, CATEGORIES } = await import(
+  join(ROOT, "src", "lib", "seo", "categories.ts")
+);
 
 const problems = [];
 const err = (where, msg, fix) => problems.push({ where, msg, fix });
@@ -32,9 +35,16 @@ const read = (p) => (existsSync(p) ? readFileSync(p, "utf8") : null);
 // A tool that exists in the code but not in TOOLS_SEO gets no title, no canonical
 // and no JSON-LD — it is invisible. The reverse (data with no route) puts a 404
 // in the sitemap.
-const RESERVED = new Set(["favicon.ico"]);
+const RESERVED = new Set(["favicon.ico", "privacidad"]);
 const routeDirs = readdirSync(APP, { withFileTypes: true })
-  .filter((d) => d.isDirectory() && !d.name.startsWith("_") && !RESERVED.has(d.name))
+  .filter(
+    (d) =>
+      d.isDirectory() &&
+      !d.name.startsWith("_") &&
+      // Dynamic segments (e.g. [categoria]) are validated separately, below.
+      !d.name.startsWith("[") &&
+      !RESERVED.has(d.name)
+  )
   .map((d) => d.name);
 
 for (const slug of TOOL_ORDER) {
@@ -166,6 +176,51 @@ for (const slug of TOOL_ORDER) {
 
 if (HOME_FAQS.length < 3) err("tools.ts → HOME_FAQS", "menos de 3 preguntas en la home.", "Añade más.");
 
+// ── 3b. Category landing pages ──────────────────────────────────────────────
+// Categories are served by the dynamic route src/app/[categoria]/. Each one is
+// an indexable hub, so it needs the same discipline as a tool: a unique title,
+// its own H1 (distinct from the title) and real intro prose.
+const dynamicCategoryRoute = existsSync(join(APP, "[categoria]", "page.tsx"));
+if (CATEGORY_ORDER.length > 0 && !dynamicCategoryRoute) {
+  err(
+    "src/app/[categoria]/",
+    "hay categorías definidas pero no existe la ruta dinámica que las sirve.",
+    "Crea src/app/[categoria]/page.tsx con generateStaticParams sobre CATEGORY_ORDER."
+  );
+}
+
+for (const id of CATEGORY_ORDER) {
+  const c = CATEGORIES[id];
+  const at = `categories.ts → "${id}"`;
+  if (!c) {
+    err(at, "está en CATEGORY_ORDER pero no tiene entrada en CATEGORIES.", "Añade su contenido.");
+    continue;
+  }
+  for (const [field, [min, max]] of Object.entries(LIMITS)) {
+    const len = (c[field] ?? "").length;
+    if (len < min || len > max) {
+      err(at, `${field} tiene ${len} caracteres (recomendado ${min}-${max}).`, "Ajusta la longitud.");
+    }
+  }
+  if (!c.h1?.trim()) err(at, "no tiene H1.", "Cada categoría necesita un H1 único.");
+  if (c.h1 === c.title) err(at, "el H1 es idéntico al title.", "Deben decir lo mismo con palabras distintas.");
+  if (!c.intro?.length) err(at, "no tiene intro.", "Es el primer texto indexable de la página de categoría.");
+  if (!c.label?.trim()) err(at, "no tiene label.", "Es el nombre visible en el sidebar, el footer y el breadcrumb.");
+}
+
+// Every tool must belong to a category that exists — otherwise it falls out of
+// every grouped list (sidebar, home, footer) and its category page 404s.
+for (const slug of TOOL_ORDER) {
+  const t = TOOLS_SEO[slug];
+  if (t && !CATEGORIES[t.category]) {
+    err(
+      `tools.ts → "${slug}"`,
+      `tiene category "${t.category}", que no existe en CATEGORIES.`,
+      "Usa un id de CATEGORY_ORDER o añade la categoría en categories.ts."
+    );
+  }
+}
+
 // ── 4. Hygiene ──────────────────────────────────────────────────────────────
 const srcFiles = [];
 const walk = (dir) => {
@@ -209,7 +264,7 @@ if (process.argv.includes("--live")) {
       .replace(/&[a-z]+;/g, " ")
       .replace(/\s+/g, " ");
 
-  for (const slug of ["", ...TOOL_ORDER]) {
+  for (const slug of ["", ...CATEGORY_ORDER, ...TOOL_ORDER]) {
     const url = `${base}/${slug}`;
     let html;
     try {
@@ -273,7 +328,9 @@ if (process.argv.includes("--live")) {
 console.log("");
 if (problems.length === 0) {
   const mode = process.argv.includes("--live") ? "estáticas + en vivo" : "estáticas";
-  console.log(`✅ SEO OK — ${TOOL_ORDER.length} herramientas, comprobaciones ${mode}.`);
+  console.log(
+    `✅ SEO OK — ${TOOL_ORDER.length} herramientas en ${CATEGORY_ORDER.length} categorías, comprobaciones ${mode}.`
+  );
   console.log("   Recuerda: valida el structured data en el Rich Results Test antes de dar por cerrado un cambio.");
   process.exit(0);
 }

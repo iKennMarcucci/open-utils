@@ -17,6 +17,9 @@ import {
 } from "lucide-react";
 import { saveAs } from "file-saver";
 import { cn } from "@/lib/utils";
+import { ToolLayout } from "@/components/ToolLayout";
+import { ExampleButton } from "@/components/ExampleButton";
+import { sampleImageFile } from "@/lib/samples";
 import {
   validateFile,
   imagesToPdf,
@@ -141,34 +144,29 @@ export function ImageToPdfUi() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-12 selection:bg-surface-strong">
-      <div className="w-full max-w-4xl space-y-10">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-center space-x-4"
-        >
-          <h2 className="text-4xl font-semibold tracking-tight text-foreground">
-            Imagen a PDF
-          </h2>
+    <ToolLayout
+      slug="imagen-a-pdf"
+      actions={
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/pdf-a-imagen"
             title="Cambiar a PDF a imagen"
             aria-label="Cambiar a PDF a imagen"
-            className="p-2 rounded-full hover:bg-surface-strong/80 transition-colors text-foreground-muted hover:text-foreground"
+            className="ou-btn ou-btn-secondary"
           >
-            <RefreshCw className="w-6 h-6 rotate-180 transition-transform duration-500" />
+            <RefreshCw className="h-4 w-4 rotate-180" />
+            PDF a imagen
           </Link>
-        </motion.div>
-
+        </div>
+      }
+    >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Input / ordering */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="flex flex-col h-full"
+            className="flex min-w-0 flex-col h-full"
           >
             <div className="flex justify-between items-end mb-3 ml-1">
               <label className="text-sm font-medium text-foreground-muted uppercase tracking-wider">
@@ -197,7 +195,7 @@ export function ImageToPdfUi() {
                 items.length === 0
                   ? "border-border hover:border-border-strong hover:bg-surface cursor-pointer items-center justify-center p-8"
                   : "border-border p-3",
-                isDragging && "border-white bg-surface",
+                isDragging && "border-accent bg-accent-subtle",
                 error && "border-red-900/50 bg-red-950/10"
               )}
             >
@@ -212,7 +210,7 @@ export function ImageToPdfUi() {
 
               {items.length === 0 ? (
                 <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-surface-strong/50 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-16 h-16 rounded-full bg-surface-strong flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <UploadCloud className="w-8 h-8 text-foreground-muted" />
                   </div>
                   <div>
@@ -226,6 +224,16 @@ export function ImageToPdfUi() {
                   <div className="text-xs text-foreground-faint mt-4 flex items-center gap-2">
                     <ImageIcon className="w-4 h-4" /> PNG, JPG, WebP, BMP y GIF · hasta 50 MB
                     cada una
+                  </div>
+                  <div onClick={(e) => e.stopPropagation()} className="mt-3">
+                    <ExampleButton
+                      onClick={() =>
+                        Promise.all([
+                          sampleImageFile("Página 1", "ejemplo-1.png", 900, 1200, ["#0ea5e9", "#1e3a8a"]),
+                          sampleImageFile("Página 2", "ejemplo-2.png", 900, 1200, ["#f97316", "#db2777"]),
+                        ]).then(addFiles)
+                      }
+                    />
                   </div>
                 </div>
               ) : (
@@ -308,7 +316,7 @@ export function ImageToPdfUi() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="flex flex-col h-full"
+            className="flex min-w-0 flex-col h-full"
           >
             <label className="text-sm font-medium text-foreground-muted mb-3 ml-1 uppercase tracking-wider">
               Salida
@@ -388,7 +396,6 @@ export function ImageToPdfUi() {
             </div>
           </motion.div>
         </div>
-      </div>
-    </div>
+    </ToolLayout>
   );
 }

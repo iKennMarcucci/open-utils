@@ -1,18 +1,29 @@
 import { ImageResponse } from "next/og";
 import { getTool } from "./tools";
+import { getCategory } from "./categories";
 
 export const OG_SIZE = { width: 1200, height: 630 };
 export const OG_CONTENT_TYPE = "image/png";
 
+/** Per-tool Open Graph card. */
+export function renderToolOgImage(slug: string) {
+  const tool = getTool(slug);
+  return renderOgCard(tool.h1, tool.description);
+}
+
+/** Per-category Open Graph card. */
+export function renderCategoryOgImage(id: string) {
+  const category = getCategory(id);
+  return renderOgCard(category.h1, category.description);
+}
+
 /**
- * Shared 1200x630 card renderer for the per-tool Open Graph images.
+ * Shared 1200x630 card renderer for the Open Graph images.
  *
  * Satori (what `next/og` uses) only supports flexbox — no CSS grid — and needs
  * an explicit `display: flex` on every container with more than one child.
  */
-export function renderToolOgImage(slug: string) {
-  const tool = getTool(slug);
-
+function renderOgCard(heading: string, subtitle: string) {
   return new ImageResponse(
     (
       <div
@@ -63,7 +74,7 @@ export function renderToolOgImage(slug: string) {
               maxWidth: 980,
             }}
           >
-            {tool.h1}
+            {heading}
           </div>
           <div
             style={{
@@ -75,7 +86,7 @@ export function renderToolOgImage(slug: string) {
               maxWidth: 940,
             }}
           >
-            {tool.description}
+            {subtitle}
           </div>
         </div>
 

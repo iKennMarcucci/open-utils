@@ -84,6 +84,74 @@
 
   /* ---- Motion ----------------------------------------------------------- */
   --ease-geist: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ---- Syntax highlighting (dark) — VS Code "Dark+" family -------------- */
+  --syntax-property: #9cdcfe;   /* object keys / property names */
+  --syntax-string: #ce9178;     /* string literals */
+  --syntax-number: #b5cea8;     /* numbers */
+  --syntax-boolean: #569cd6;    /* true / false */
+  --syntax-null: #569cd6;       /* null / undefined */
+  --syntax-keyword: #569cd6;    /* language keywords */
+  --syntax-operator: #8a8a8a;   /* : = punctuation-ish operators */
+  --syntax-punctuation: #7d7d7d;/* { } [ ] , */
+  --syntax-comment: #6a9955;    /* comments */
+  --syntax-type: #4ec9b0;       /* class / type names */
+  --syntax-function: #dcdcaa;   /* function names */
+  --syntax-tag: #569cd6;        /* XML / HTML tags */
+  --syntax-attr-name: #9cdcfe;  /* attribute names */
+  --syntax-attr-value: #ce9178; /* attribute values */
+  --syntax-heading: #569cd6;    /* markdown headings */
+  --syntax-gutter: rgba(255, 255, 255, 0.35);
+}
+
+/* ---------------------------------------------------------------------------
+   Light theme — Geist light grays + VS Code "Light+" syntax palette.
+   Applied when <html> carries the `light` class (set before paint by the
+   no-flash script in the root layout).
+   ------------------------------------------------------------------------- */
+html.light {
+  --ds-gray-alpha-100: rgba(0, 0, 0, 0.04);
+  --ds-gray-alpha-200: rgba(0, 0, 0, 0.07);
+  --ds-gray-alpha-300: rgba(0, 0, 0, 0.11);
+  --ds-gray-alpha-400: rgba(0, 0, 0, 0.16);
+
+  --ds-gray-300: #e2e2e2;
+  --ds-gray-500: #c4c4c4;
+
+  --background: #ffffff;
+  --background-elevated: #fbfbfb;
+  --surface: #f7f7f8;
+  --surface-hover: #f0f0f1;
+  --surface-strong: #ececed;
+
+  --foreground: #171717;
+  --foreground-muted: #4a4a4a;
+  --foreground-subtle: #666666;
+  --foreground-faint: #8a8a8a;
+
+  --accent-text: #0068d6;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+
+  /* Syntax — VS Code "Light+" */
+  --syntax-property: #0451a5;
+  --syntax-string: #a31515;
+  --syntax-number: #098658;
+  --syntax-boolean: #0000ff;
+  --syntax-null: #0000ff;
+  --syntax-keyword: #0000ff;
+  --syntax-operator: #555555;
+  --syntax-punctuation: #6a6a6a;
+  --syntax-comment: #008000;
+  --syntax-type: #267f99;
+  --syntax-function: #795e26;
+  --syntax-tag: #800000;
+  --syntax-attr-name: #e50000;
+  --syntax-attr-value: #0451a5;
+  --syntax-heading: #800000;
+  --syntax-gutter: rgba(0, 0, 0, 0.3);
 }
 
 /* Map design tokens into Tailwind's theme so utilities stay on-system. */
@@ -238,10 +306,10 @@ input[type="file"] {
 
 .ou-btn-primary {
   background: var(--foreground);
-  color: #000000;
+  color: var(--background);
 }
 .ou-btn-primary:not(:disabled):hover {
-  background: #ffffff;
+  background: var(--foreground-muted);
 }
 
 .ou-btn-accent {
@@ -333,6 +401,131 @@ input[type="file"] {
     var(--ds-gray-alpha-400),
     transparent
   );
+}
+
+/* ---------------------------------------------------------------------------
+   Syntax highlighting — shared token colours for every code/format panel.
+   Prism emits `.token.<type>` spans; we map them onto the theme-aware
+   `--syntax-*` variables so highlighting tracks light/dark automatically.
+   ------------------------------------------------------------------------- */
+.ou-code {
+  color: var(--foreground);
+  tab-size: 2;
+}
+.ou-code .token.property,
+.ou-code .token.attr-name,
+.ou-code .token.selector,
+.ou-code .token.constant,
+.ou-code .token.symbol {
+  color: var(--syntax-property);
+}
+.ou-code .token.string,
+.ou-code .token.char,
+.ou-code .token.attr-value,
+.ou-code .token.inserted,
+.ou-code .token.regex {
+  color: var(--syntax-string);
+}
+.ou-code .token.number,
+.ou-code .token.unit,
+.ou-code .token.hexcode {
+  color: var(--syntax-number);
+}
+.ou-code .token.boolean {
+  color: var(--syntax-boolean);
+}
+.ou-code .token.null,
+.ou-code .token.nil {
+  color: var(--syntax-null);
+}
+.ou-code .token.keyword,
+.ou-code .token.atrule,
+.ou-code .token.rule,
+.ou-code .token.important {
+  color: var(--syntax-keyword);
+}
+.ou-code .token.operator,
+.ou-code .token.entity,
+.ou-code .token.url {
+  color: var(--syntax-operator);
+}
+.ou-code .token.punctuation {
+  color: var(--syntax-punctuation);
+}
+.ou-code .token.comment,
+.ou-code .token.prolog,
+.ou-code .token.doctype,
+.ou-code .token.cdata {
+  color: var(--syntax-comment);
+  font-style: italic;
+}
+.ou-code .token.class-name,
+.ou-code .token.builtin,
+.ou-code .token.namespace {
+  color: var(--syntax-type);
+}
+.ou-code .token.function {
+  color: var(--syntax-function);
+}
+.ou-code .token.tag,
+.ou-code .token.keyword.tag {
+  color: var(--syntax-tag);
+}
+.ou-code .token.tag .token.punctuation {
+  color: var(--syntax-tag);
+}
+.ou-code .token.title,
+.ou-code .token.title .token.punctuation {
+  color: var(--syntax-heading);
+  font-weight: 600;
+}
+.ou-code .token.bold {
+  font-weight: 600;
+}
+.ou-code .token.italic {
+  font-style: italic;
+}
+.ou-code .token.table-header {
+  color: var(--syntax-property);
+  font-weight: 600;
+}
+
+/* Highlighted editable input: a transparent <textarea> sits over a coloured
+   <pre> underlay. They must share identical metrics so the caret lines up. */
+.ou-code-input {
+  position: relative;
+}
+.ou-code-input textarea,
+.ou-code-input pre {
+  margin: 0;
+  border: 0;
+  font: inherit;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  letter-spacing: normal;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  tab-size: 2;
+}
+.ou-code-input textarea {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--foreground);
+  outline: none;
+}
+.ou-code-input textarea::selection {
+  background: var(--accent-subtle);
+}
+.ou-code-input pre {
+  pointer-events: none;
+  min-height: 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {

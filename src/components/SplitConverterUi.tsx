@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  UploadCloud,
   FileText,
   Files,
   Image as ImageIcon,
@@ -21,6 +20,10 @@ import {
   Package as PackageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ExampleButton } from "@/components/ExampleButton";
+import { ToolLayout } from "@/components/ToolLayout";
+import { FileDropzone } from "@/components/FileDropzone";
+import { samplePdfFile } from "@/lib/samples";
 import {
   loadPdf,
   buildSplitOutputs,
@@ -62,7 +65,6 @@ export function SplitConverterUi() {
   const [results, setResults] = useState<SplitResultGroup[] | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<SplitError | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pkgCounter = useRef(1);
@@ -127,13 +129,6 @@ export function SplitConverterUi() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const f = e.dataTransfer.files?.[0];
-    if (f) handleFile(f);
   };
 
   const invalidateResults = () => {
@@ -208,37 +203,18 @@ export function SplitConverterUi() {
   };
 
   return (
-    <div
-      className={cn(
-        "min-h-screen flex flex-col p-6 sm:p-10 lg:p-12",
-        !doc && "items-center justify-center"
-      )}
-    >
-      <div
-        className={cn(
-          "w-full mx-auto flex flex-col",
-          doc ? "max-w-6xl flex-1" : "max-w-4xl"
-        )}
-      >
-        {/* Header — matches "Unificador PDF": centered icon + title + mode toggle */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-center space-x-4 mb-10"
+    <ToolLayout
+      slug="dividir-pdf"
+      actions={
+        <button
+          onClick={() => router.push("/unir-pdf")}
+          title="Cambiar a Unir PDF"
+          className="ou-btn ou-btn-secondary w-fit"
         >
-          <Scissors className="w-7 h-7 text-foreground-muted" />
-          <h2 className="text-4xl font-semibold tracking-tight text-foreground">
-            Separador PDF
-          </h2>
-          <button
-            onClick={() => router.push("/unir-pdf")}
-            title="Cambiar a Unir PDF"
-            className="p-2 rounded-full hover:bg-surface-strong transition-colors text-foreground-muted hover:text-foreground"
-          >
-            <RefreshCw className="w-6 h-6 transition-transform duration-500" />
-          </button>
-        </motion.div>
-
+          <RefreshCw className="h-4 w-4" /> Unir PDF
+        </button>
+      }
+    >
         {/* Empty state / loader — two columns, like "Unificador PDF" */}
         {!doc ? (
           isLoading ? (
@@ -260,36 +236,14 @@ export function SplitConverterUi() {
                 <label className="text-sm font-medium text-foreground-muted uppercase tracking-wider mb-3 ml-1">
                   Entrada
                 </label>
-                <div
-                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={onDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={cn(
-                    "group relative flex-1 flex flex-col items-center justify-center gap-5 border-2 border-dashed rounded-panel transition-all overflow-hidden min-h-[420px] p-8 text-center cursor-pointer",
-                    isDragging
-                      ? "border-white bg-surface"
-                      : "border-border bg-surface/50 hover:border-border-strong hover:bg-surface"
-                  )}
-                >
-                  <div className="w-16 h-16 rounded-full bg-surface-strong flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <UploadCloud className="w-8 h-8 text-foreground-muted" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-medium text-foreground">Suelta tu PDF aquí</p>
-                    <p className="text-sm text-foreground-subtle mt-1">o haz clic para seleccionarlo</p>
-                  </div>
-                  <div className="text-xs text-foreground-faint mt-2 flex items-center gap-2">
-                    <FileText className="w-4 h-4" /> Solo PDF · máx. 100MB
-                  </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="application/pdf"
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
-                    className="hidden"
-                  />
-                </div>
+                <FileDropzone
+                  onFiles={(files) => handleFile(files[0])}
+                  accept="application/pdf"
+                  title="Suelta tu PDF aquí"
+                  hint={<><FileText className="w-4 h-4" /> Solo PDF · máx. 100MB</>}
+                  example={<ExampleButton onClick={() => samplePdfFile(5, "ejemplo.pdf").then(handleFile)} />}
+                  className="flex-1 min-h-[420px]"
+                />
               </motion.div>
 
               {/* Salida */}
@@ -509,7 +463,6 @@ export function SplitConverterUi() {
             </div>
           </div>
         )}
-      </div>
 
       {/* Error modal */}
       <AnimatePresence>
@@ -550,7 +503,7 @@ export function SplitConverterUi() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </ToolLayout>
   );
 }
 

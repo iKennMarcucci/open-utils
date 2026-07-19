@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  UploadCloud,
   Image as ImageIcon,
   Brush,
   Download,
@@ -15,8 +14,15 @@ import {
   RotateCcw,
   AlertCircle,
   Loader2,
+  Crop as CropIcon,
+  Scaling,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ExampleButton } from "@/components/ExampleButton";
+import { ToolLayout } from "@/components/ToolLayout";
+import { FileDropzone } from "@/components/FileDropzone";
+import { CropPanel, type CropRect } from "@/components/editor/CropPanel";
 import {
   AnnotationCanvas,
   type AnnotationCanvasHandle,
@@ -82,11 +88,15 @@ export function ImageEditorUi() {
   const [zoom, setZoom] = useState(1);
   const [containerW, setContainerW] = useState(800);
   const [isLoading, setIsLoading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<EditorError | null>(null);
   const [selection, setSelection] = useState<Annotation | null>(null);
   const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
+  const [showResize, setShowResize] = useState(false);
+  const [resizeW, setResizeW] = useState(0);
+  const [resizeH, setResizeH] = useState(0);
+  const [linkAspect, setLinkAspect] = useState(true);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const hist = useLayeredHistory<ImgState>();
   const canvasApi = useRef<AnnotationCanvasHandle>(null);
@@ -155,13 +165,6 @@ export function ImageEditorUi() {
     reader.readAsDataURL(file);
   };
 
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const f = e.dataTransfer.files?.[0];
-    if (f) handleFile(f);
-  };
-
   const resetAll = () => {
     setImage(null);
     setSelection(null);
@@ -194,6 +197,103 @@ export function ImageEditorUi() {
     } catch (e) {
       setError({ title: "Imagen no válida", message: (e as Error).message, suggestion: "Usa un PNG, JPG o WEBP." });
     }
+  };
+
+  // ---- transform (resize / crop) ---------------------------------------
+  // These "bake" the current scene (background + drawings) into a new base
+  // image and reset the annotations — the clean way to change the canvas size
+  // without breaking annotation coordinates.
+  const flattenScene = async (): Promise<HTMLCanvasElement | null> => {
+    if (!bg) return null;
+    const anns = hist.get(LAYER)?.annotations ?? [];
+    await preloadImages(anns);
+    const canvas = document.createElement("canvas");
+    canvas.width = bg.width;
+    canvas.height = bg.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    renderScene(ctx, bg.source, bg.width, bg.height, anns);
+    return canvas;
+  };
+
+  const adoptCanvas = (canvas: HTMLCanvasElement, name: string) => {
+    const el = new Image();
+    el.onload = () => {
+      setImage({ el, width: el.naturalWidth, height: el.naturalHeight, name });
+      hist.reset({ [LAYER]: { annotations: [], rotation: 0 } });
+      setZoom(1);
+      setTool("select");
+      setSelection(null);
+    };
+    el.src = canvas.toDataURL("image/png");
+  };
+
+  const openResize = () => {
+    if (!bg) return;
+    setResizeW(bg.width);
+    setResizeH(bg.height);
+    setLinkAspect(true);
+    setShowResize(true);
+  };
+
+  const setResizeAspect = (ratio: number) => {
+    if (!bg) return;
+    const w = resizeW || bg.width;
+    setResizeH(Math.round(w / ratio));
+  };
+
+  const applyResize = async () => {
+    const flat = await flattenScene();
+    if (!flat || resizeW < 1 || resizeH < 1) return;
+    const c = document.createElement("canvas");
+    c.width = resizeW;
+    c.height = resizeH;
+    const ctx = c.getContext("2d")!;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(flat, 0, 0, resizeW, resizeH);
+    adoptCanvas(c, image?.name ?? "imagen.png");
+    setShowResize(false);
+  };
+
+  const openCrop = async () => {
+    const flat = await flattenScene();
+    if (flat) setCropSrc(flat.toDataURL("image/png"));
+  };
+
+  const applyCrop = (rect: CropRect) => {
+    if (!cropSrc) return;
+    const el = new Image();
+    el.onload = () => {
+      const c = document.createElement("canvas");
+      c.width = Math.round(rect.w);
+      c.height = Math.round(rect.h);
+      const ctx = c.getContext("2d")!;
+      ctx.drawImage(el, rect.x, rect.y, rect.w, rect.h, 0, 0, rect.w, rect.h);
+      adoptCanvas(c, image?.name ?? "imagen.png");
+      setCropSrc(null);
+    };
+    el.src = cropSrc;
+  };
+
+  const loadExampleImage = () => {
+    const c = document.createElement("canvas");
+    c.width = 1280;
+    c.height = 720;
+    const ctx = c.getContext("2d")!;
+    const g = ctx.createLinearGradient(0, 0, 1280, 720);
+    g.addColorStop(0, "#0ea5e9");
+    g.addColorStop(1, "#6d28d9");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 1280, 720);
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.font = "bold 84px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Imagen de ejemplo", 640, 340);
+    ctx.font = "500 34px system-ui, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+    ctx.fillText("Dibuja, resalta, recorta o redimensiona", 640, 410);
+    adoptCanvas(c, "ejemplo.png");
   };
 
   const handleExport = async (format: "png" | "jpeg") => {
@@ -254,13 +354,8 @@ export function ImageEditorUi() {
 
   if (!image || !bg) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-10">
-        <div className="w-full max-w-3xl">
-          <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-center gap-4 mb-10">
-            <Brush className="w-7 h-7 text-foreground-muted" />
-            <h2 className="text-4xl font-semibold tracking-tight text-foreground">Editor de Imagen</h2>
-          </motion.div>
-
+      <ToolLayout slug="editor-imagen">
+        <div className="w-full">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center min-h-[420px]">
               <div className="w-12 h-12 border-[3px] border-surface-strong border-t-accent rounded-full animate-spin" />
@@ -268,33 +363,20 @@ export function ImageEditorUi() {
             </div>
           ) : (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-              <div
-                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={onDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={cn(
-                  "group relative flex flex-col items-center justify-center gap-5 border-2 border-dashed rounded-panel transition-all min-h-[420px] p-8 text-center cursor-pointer",
-                  isDragging ? "border-white bg-surface" : "border-border bg-surface/50 hover:border-border-strong hover:bg-surface"
-                )}
-              >
-                <div className="w-16 h-16 rounded-full bg-surface-strong flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <UploadCloud className="w-8 h-8 text-foreground-muted" />
-                </div>
-                <div>
-                  <p className="text-lg font-medium text-foreground">Suelta tu imagen aquí</p>
-                  <p className="text-sm text-foreground-subtle mt-1">o haz clic para seleccionarla</p>
-                </div>
-                <div className="text-xs text-foreground-faint flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4" /> Dibuja, encierra en cuadros, resalta, escribe y agrega formas
-                </div>
-                <input type="file" ref={fileInputRef} accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} className="hidden" />
-              </div>
+              <FileDropzone
+                onFiles={(files) => handleFile(files[0])}
+                accept="image/*"
+                title="Suelta tu imagen aquí"
+                subtitle="o haz clic para seleccionarla"
+                hint={<><ImageIcon className="w-4 h-4" /> Dibuja, encierra en cuadros, resalta, escribe y agrega formas</>}
+                example={<ExampleButton onClick={loadExampleImage} label="Probar con una imagen de ejemplo" />}
+                className="min-h-[420px]"
+              />
             </motion.div>
           )}
         </div>
         <ErrorModal error={error} onClose={() => setError(null)} />
-      </div>
+      </ToolLayout>
     );
   }
 
@@ -302,32 +384,12 @@ export function ImageEditorUi() {
     <div className="flex flex-col h-screen overflow-hidden">
       <input type="file" ref={imgInputRef} accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageFile(f); e.target.value = ""; }} className="hidden" />
 
-      {/* Top bar — pinned above the scrolling canvas */}
-      <div className="shrink-0 z-30 border-b border-border bg-background-elevated/95 backdrop-blur px-3 py-2.5 flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2 min-w-0">
-          <Brush className="w-5 h-5 text-foreground-muted shrink-0" />
-          <span className="text-sm font-medium text-foreground truncate max-w-[160px]" title={image.name}>{image.name}</span>
-        </div>
-        <div className="flex-1 min-w-[280px]">
-          <EditorToolbar
-            tool={tool}
-            setTool={setTool}
-            style={style}
-            setStyle={setStyle}
-            onUndo={() => hist.undo(LAYER)}
-            onRedo={() => hist.redo(LAYER)}
-            canUndo={hist.canUndo(LAYER)}
-            canRedo={hist.canRedo(LAYER)}
-            hasSelection={!!selection}
-            onDelete={() => canvasApi.current?.deleteSelected()}
-            onDuplicate={() => canvasApi.current?.duplicateSelected()}
-            onBringForward={() => canvasApi.current?.bringForward()}
-            onSendBackward={() => canvasApi.current?.sendBackward()}
-            onInsertImage={onInsertImage}
-            selectedType={selection?.type}
-          />
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
+      {/* Header — file name + document actions */}
+      <div className="shrink-0 z-30 border-b border-border bg-background-elevated/95 backdrop-blur px-4 h-14 flex items-center gap-3">
+        <Brush className="w-5 h-5 text-foreground-muted shrink-0" />
+        <span className="text-sm font-medium text-foreground truncate max-w-[200px]" title={image.name}>{image.name}</span>
+        <div className="ml-auto flex items-center gap-2 shrink-0">
+          <ExampleButton onClick={loadExampleImage} className="h-9 hidden sm:inline-flex" label="Ejemplo" />
           <button onClick={resetAll} className="ou-btn ou-btn-ghost h-9 px-3 text-xs">Nueva</button>
           <button onClick={() => handleExport("jpeg")} disabled={isExporting} className="ou-btn ou-btn-secondary h-9 px-3">JPG</button>
           <button onClick={() => handleExport("png")} disabled={isExporting} className="ou-btn ou-btn-accent h-9 px-4">
@@ -337,20 +399,66 @@ export function ImageEditorUi() {
         </div>
       </div>
 
-      {/* Zoom + rotate controls */}
-      <div className="shrink-0 z-20 border-b border-border px-3 py-2 flex items-center gap-2 bg-background-elevated/90 backdrop-blur">
+      {/* Toolbar — full-width, its own row so it has room to breathe */}
+      <div className="shrink-0 z-20 border-b border-border bg-background-elevated/90 backdrop-blur px-3 py-2 overflow-x-auto custom-scrollbar">
+        <EditorToolbar
+          tool={tool}
+          setTool={setTool}
+          style={style}
+          setStyle={setStyle}
+          onUndo={() => hist.undo(LAYER)}
+          onRedo={() => hist.redo(LAYER)}
+          canUndo={hist.canUndo(LAYER)}
+          canRedo={hist.canRedo(LAYER)}
+          hasSelection={!!selection}
+          onDelete={() => canvasApi.current?.deleteSelected()}
+          onDuplicate={() => canvasApi.current?.duplicateSelected()}
+          onBringForward={() => canvasApi.current?.bringForward()}
+          onSendBackward={() => canvasApi.current?.sendBackward()}
+          onInsertImage={onInsertImage}
+          selectedType={selection?.type}
+        />
+      </div>
+
+      {/* Transform + zoom bar */}
+      <div className="relative shrink-0 z-10 border-b border-border px-3 py-2 flex items-center gap-1.5 bg-background-elevated/80 backdrop-blur">
+        <span className="ou-label hidden md:inline mr-1">Transformar</span>
         <button onClick={() => rotateImage(-1)} className="ou-btn ou-btn-ghost h-8 px-2.5" title="Rotar a la izquierda"><RotateCcw className="w-4 h-4" /></button>
         <button onClick={() => rotateImage(1)} className="ou-btn ou-btn-ghost h-8 px-2.5" title="Rotar a la derecha"><RotateCw className="w-4 h-4" /></button>
+        <button onClick={openResize} className={cn("ou-btn ou-btn-ghost h-8 px-2.5", showResize && "bg-surface-hover text-foreground")} title="Redimensionar"><Scaling className="w-4 h-4" /><span className="hidden lg:inline ml-1 text-xs">Redimensionar</span></button>
+        <button onClick={openCrop} className="ou-btn ou-btn-ghost h-8 px-2.5" title="Recortar"><CropIcon className="w-4 h-4" /><span className="hidden lg:inline ml-1 text-xs">Recortar</span></button>
+
         <div className="w-px h-5 bg-border mx-1" />
         <button onClick={() => setZoom((z) => Math.max(0.1, z - 0.15))} className="ou-btn ou-btn-ghost h-8 px-2.5" title="Alejar"><ZoomOut className="w-4 h-4" /></button>
         <span className="text-xs text-foreground-muted tabular-nums w-12 text-center">{Math.round(scale * 100)}%</span>
         <button onClick={() => setZoom((z) => Math.min(6, z + 0.15))} className="ou-btn ou-btn-ghost h-8 px-2.5" title="Acercar"><ZoomIn className="w-4 h-4" /></button>
         <button onClick={() => setZoom(1)} className="ou-btn ou-btn-ghost h-8 px-2.5" title="Ajustar"><Maximize2 className="w-4 h-4" /></button>
         <span className="ml-auto text-xs text-foreground-faint tabular-nums">{bg.width} × {bg.height}px</span>
+
+        {/* Resize popover */}
+        {showResize && (
+          <>
+            <div className="fixed inset-0 z-20" onClick={() => setShowResize(false)} />
+            <div className="absolute top-full left-3 mt-2 z-30 ou-card rounded-panel p-4 shadow-lg w-72">
+              <p className="ou-label mb-2">Redimensionar</p>
+              <div className="mb-3 flex items-center gap-2">
+                <input type="number" min={1} value={resizeW} onChange={(e) => { const w = Math.max(1, Number(e.target.value) || 1); setResizeW(w); if (linkAspect && bg) setResizeH(Math.round(w * (bg.height / bg.width))); }} className="w-full rounded-control border border-border bg-surface px-2 h-9 text-sm text-foreground outline-none focus:border-border-strong" />
+                <button onClick={() => setLinkAspect((v) => !v)} title="Mantener proporción" className={cn("h-9 px-2 rounded-control text-xs shrink-0", linkAspect ? "bg-surface-strong text-foreground border border-border-strong" : "text-foreground-faint hover:text-foreground")}>{linkAspect ? "🔗" : "⛓️‍💥"}</button>
+                <input type="number" min={1} value={resizeH} onChange={(e) => { const h = Math.max(1, Number(e.target.value) || 1); setResizeH(h); if (linkAspect && bg) setResizeW(Math.round(h * (bg.width / bg.height))); }} className="w-full rounded-control border border-border bg-surface px-2 h-9 text-sm text-foreground outline-none focus:border-border-strong" />
+              </div>
+              <div className="mb-3 flex flex-wrap gap-1.5">
+                {([["16:9", 16 / 9], ["9:16", 9 / 16], ["1:1", 1], ["4:3", 4 / 3], ["3:4", 3 / 4], ["3:2", 3 / 2]] as const).map(([label, r]) => (
+                  <button key={label} onClick={() => setResizeAspect(r)} className="ou-pill">{label}</button>
+                ))}
+              </div>
+              <button onClick={applyResize} className="ou-btn ou-btn-accent w-full h-9"><Check className="w-4 h-4" /> Aplicar</button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Canvas */}
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-auto custom-scrollbar bg-[#0b0b0b] p-6 flex items-start justify-center">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-auto custom-scrollbar bg-surface-strong p-6 flex items-start justify-center">
         <AnnotationCanvas
           ref={canvasApi}
           key={`img:${bg.rotation}`}
@@ -367,6 +475,10 @@ export function ImageEditorUi() {
           onImagePlaced={() => { setPendingImage(null); setTool("select"); }}
         />
       </div>
+
+      {cropSrc && bg && (
+        <CropPanel src={cropSrc} imgW={bg.width} imgH={bg.height} onCancel={() => setCropSrc(null)} onApply={applyCrop} />
+      )}
 
       <ErrorModal error={error} onClose={() => setError(null)} />
     </div>

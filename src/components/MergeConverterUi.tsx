@@ -18,6 +18,10 @@ import {
 } from "lucide-react";
 import { saveAs } from "file-saver";
 import { cn } from "@/lib/utils";
+import { ExampleButton } from "@/components/ExampleButton";
+import { ToolLayout } from "@/components/ToolLayout";
+import { FileDropzone } from "@/components/FileDropzone";
+import { samplePdfFile } from "@/lib/samples";
 import {
   buildMergeItem,
   mergeToPdf,
@@ -128,28 +132,19 @@ export function MergeConverterUi() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-12 selection:bg-surface-strong">
-      <div className="w-full max-w-4xl space-y-12">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-center space-x-4"
+    <ToolLayout
+      slug="unir-pdf"
+      actions={
+        <button
+          onClick={() => router.push("/dividir-pdf")}
+          title="Cambiar a Dividir PDF"
+          className="ou-btn ou-btn-secondary w-fit"
         >
-          <Layers className="w-7 h-7 text-foreground-muted" />
-          <h2 className="text-4xl font-semibold tracking-tight text-foreground">
-            Unificador PDF
-          </h2>
-          <button
-            onClick={() => router.push("/dividir-pdf")}
-            title="Cambiar a Dividir PDF"
-            className="p-2 rounded-full hover:bg-surface-strong transition-colors text-foreground-muted hover:text-foreground"
-          >
-            <RefreshCw className="w-6 h-6 transition-transform duration-500" />
-          </button>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <RefreshCw className="h-4 w-4" /> Dividir PDF
+        </button>
+      }
+    >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Input / Ordering Area */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -171,55 +166,57 @@ export function MergeConverterUi() {
               )}
             </div>
 
-            <div
-              onDragOver={onDragOver}
-              onDragLeave={onDragLeave}
-              onDrop={onDrop}
-              className={cn(
-                "group relative flex-1 flex flex-col border-2 border-dashed rounded-panel transition-all overflow-hidden min-h-[400px] bg-surface/50",
-                items.length === 0
-                  ? "border-border hover:border-border-strong hover:bg-surface cursor-pointer items-center justify-center p-8"
-                  : "border-border p-3",
-                isDragging && "border-white bg-surface",
-                error && "border-red-900/50 bg-red-950/10"
-              )}
-              onClick={() => items.length === 0 && fileInputRef.current?.click()}
-            >
-              <input
-                type="file"
-                ref={fileInputRef}
-                multiple
+            {items.length === 0 ? (
+              <FileDropzone
+                onFiles={addFiles}
                 accept={ACCEPT}
-                onChange={(e) => {
-                  if (e.target.files?.length) addFiles(e.target.files);
-                  e.target.value = "";
-                }}
-                className="hidden"
-              />
-
-              {items.length === 0 ? (
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-surface-strong/50 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <UploadCloud className="w-8 h-8 text-foreground-muted" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-medium text-foreground">
-                      Suelta tus PDFs e imágenes aquí
-                    </p>
-                    <p className="text-sm text-foreground-subtle mt-1">
-                      o haz clic para seleccionar varios
-                    </p>
-                  </div>
-                  <div className="text-xs text-foreground-faint mt-4 flex items-center gap-3">
+                multiple
+                title="Suelta tus PDFs e imágenes aquí"
+                subtitle="o haz clic para seleccionar varios"
+                hint={
+                  <>
                     <span className="flex items-center gap-1.5">
                       <FileText className="w-4 h-4" /> PDF
                     </span>
                     <span className="flex items-center gap-1.5">
                       <ImageIcon className="w-4 h-4" /> PNG, JPG, WebP
                     </span>
-                  </div>
-                </div>
-              ) : (
+                  </>
+                }
+                example={
+                  <ExampleButton
+                    onClick={() =>
+                      Promise.all([
+                        samplePdfFile(2, "contrato.pdf", "Contrato"),
+                        samplePdfFile(1, "anexo.pdf", "Anexo"),
+                      ]).then(addFiles)
+                    }
+                  />
+                }
+                className={cn("flex-1 min-h-[400px]", error && "border-error/40 bg-error/5")}
+              />
+            ) : (
+              <div
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                className={cn(
+                  "group relative flex-1 flex flex-col border-2 border-dashed rounded-panel transition-all overflow-hidden min-h-[400px] bg-surface/50 border-border p-3",
+                  isDragging && "border-accent bg-surface",
+                  error && "border-error/40 bg-error/5"
+                )}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  multiple
+                  accept={ACCEPT}
+                  onChange={(e) => {
+                    if (e.target.files?.length) addFiles(e.target.files);
+                    e.target.value = "";
+                  }}
+                  className="hidden"
+                />
                 <div className="flex-1 flex flex-col min-h-0">
                   <Reorder.Group
                     axis="y"
@@ -240,7 +237,7 @@ export function MergeConverterUi() {
                         <span className="w-6 h-6 rounded-md bg-surface-strong text-foreground-muted text-xs font-medium flex items-center justify-center shrink-0">
                           {idx + 1}
                         </span>
-                        <div className="w-10 h-10 rounded-md overflow-hidden bg-background flex items-center justify-center shrink-0 border border-white/5">
+                        <div className="w-10 h-10 rounded-md overflow-hidden bg-background flex items-center justify-center shrink-0 border border-border">
                           {item.preview ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -281,8 +278,8 @@ export function MergeConverterUi() {
                     <UploadCloud className="w-4 h-4" /> Agregar más
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </motion.div>
 
           {/* Output Area */}
@@ -310,7 +307,7 @@ export function MergeConverterUi() {
                     exit={{ opacity: 0 }}
                     className="flex flex-col items-center"
                   >
-                    <div className="w-12 h-12 border-[3px] border-border border-t-white rounded-full animate-spin" />
+                    <div className="w-12 h-12 border-[3px] border-border border-t-accent rounded-full animate-spin" />
                     <p className="mt-6 text-sm font-medium text-foreground-muted animate-pulse">
                       Unificando...
                     </p>
@@ -322,7 +319,7 @@ export function MergeConverterUi() {
                     animate={{ opacity: 1 }}
                     className="absolute inset-0 flex flex-col p-4"
                   >
-                    <div className="flex-1 min-h-0 rounded-xl overflow-hidden border border-white/10 bg-white">
+                    <div className="flex-1 min-h-0 rounded-xl overflow-hidden border border-border bg-white">
                       <iframe
                         src={result.url}
                         className="w-full h-full"
@@ -338,7 +335,7 @@ export function MergeConverterUi() {
                       </div>
                       <button
                         onClick={() => saveAs(result.blob, result.filename)}
-                        className="bg-white hover:bg-neutral-200 text-black px-5 py-2.5 rounded-full text-sm font-medium transition-transform hover:scale-105 flex items-center gap-2"
+                        className="bg-foreground hover:bg-foreground-muted text-background px-5 py-2.5 rounded-full text-sm font-medium transition-transform hover:scale-105 flex items-center gap-2"
                       >
                         <Download className="w-4 h-4" /> Descargar PDF
                       </button>
@@ -379,7 +376,7 @@ export function MergeConverterUi() {
             className={cn(
               "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium border transition-colors",
               addPageNumbers
-                ? "bg-white/10 border-white/20 text-foreground"
+                ? "bg-surface-hover border-border-strong text-foreground"
                 : "bg-transparent border-border text-foreground-muted hover:text-foreground hover:border-border-strong"
             )}
           >
@@ -393,14 +390,13 @@ export function MergeConverterUi() {
               "flex items-center gap-2 px-8 py-2.5 rounded-full text-sm font-semibold transition-all",
               items.length === 0 || isMerging
                 ? "bg-surface-strong text-foreground-subtle cursor-not-allowed"
-                : "bg-white text-black hover:bg-neutral-200 hover:scale-105"
+                : "bg-foreground text-background hover:bg-foreground-muted hover:scale-105"
             )}
           >
             <Layers className="w-4 h-4" />
             Unificar {items.length > 0 ? `${items.length} archivos` : ""} en PDF
           </button>
         </motion.div>
-      </div>
 
       {/* Error Modal */}
       <AnimatePresence>
@@ -427,7 +423,7 @@ export function MergeConverterUi() {
                 <p className="text-foreground-muted text-sm mb-4 leading-relaxed wrap-break-word">
                   {error.message}
                 </p>
-                <div className="bg-black/30 rounded-lg p-4 border border-white/5">
+                <div className="bg-background-elevated rounded-lg p-4 border border-border">
                   <p className="text-xs text-foreground-muted font-medium mb-1 uppercase tracking-wider">
                     Sugerencia
                   </p>
@@ -438,7 +434,7 @@ export function MergeConverterUi() {
                 <div className="mt-8 flex justify-end">
                   <button
                     onClick={() => setError(null)}
-                    className="bg-white hover:bg-neutral-200 text-black px-6 py-2 rounded-full text-sm font-medium transition-colors"
+                    className="ou-btn ou-btn-primary"
                   >
                     Entendido
                   </button>
@@ -448,6 +444,6 @@ export function MergeConverterUi() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </ToolLayout>
   );
 }

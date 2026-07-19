@@ -22,6 +22,7 @@ import {
   absoluteUrl,
 } from "./site";
 import { ALL_TOOLS, HOME_FAQS, type Faq, type ToolSeo } from "./tools";
+import type { CategoryWithTools } from "./category-tools";
 
 const faqPage = (id: string, faqs: Faq[]) => ({
   "@type": "FAQPage",
@@ -106,6 +107,49 @@ export function homeGraph() {
         })),
       },
       faqPage(`${url}#faq`, HOME_FAQS),
+    ],
+  };
+}
+
+/** A category landing page: a CollectionPage listing its tools, plus breadcrumb. */
+export function categoryGraph(category: CategoryWithTools) {
+  const url = absoluteUrl(`/${category.id}`);
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${url}#webpage`,
+        url,
+        name: category.title,
+        description: category.description,
+        isPartOf: { "@id": WEBSITE_ID },
+        breadcrumb: { "@id": `${url}#breadcrumb` },
+        mainEntity: { "@id": `${url}#tools` },
+        inLanguage: SITE_LANG,
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${url}#tools`,
+        name: category.label,
+        // Only the tools actually shown on the page — never claim more.
+        itemListElement: category.tools.map((tool, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: tool.name,
+          url: absoluteUrl(`/${tool.slug}`),
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Inicio", item: absoluteUrl("/") },
+          // The last item carries no `item`: it is the current page.
+          { "@type": "ListItem", position: 2, name: category.label },
+        ],
+      },
     ],
   };
 }

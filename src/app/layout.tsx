@@ -71,9 +71,15 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0a0a0a",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+  ],
 };
+
+// Applied before first paint so the theme never flashes: honour a stored choice,
+// otherwise fall back to the OS preference. Kept tiny and inlined in <head>.
+const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}var d=document.documentElement;d.classList.remove('light','dark');d.classList.add(t);d.style.colorScheme=t;}catch(e){}})();`;
 
 export default function RootLayout({
   children,
@@ -83,9 +89,12 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full bg-background text-foreground" suppressHydrationWarning>
         {/* Organization + Person + WebSite, declared once and referenced by @id. */}
         <JsonLd data={siteGraph()} />
@@ -96,15 +105,12 @@ export default function RootLayout({
             <Footer />
           </div>
         </div>
-        {/* Both render null — they only inject their beacon script, so they add
-            nothing to the server HTML and cannot affect the crawlable content or
-            the LCP element. In production both scripts are served same-origin
-            (/_vercel/insights/, /_vercel/speed-insights/), so no third-party
-            domain is ever contacted.
-
-            SpeedInsights reports the real Core Web Vitals of real visitors —
-            field data, which is what Google actually ranks on. A lab score in
-            PageSpeed Insights is only a proxy for it. */}
+        {/* Anonymous usage + performance telemetry only. These beacons carry the
+            page path and Core Web Vitals — never the files, text or data the user
+            processes (that is all handled locally and never transmitted, and the
+            CSP `connect-src 'self'` in next.config.ts blocks any third-party
+            connection). On Vercel both are served same-origin (/_vercel/insights/,
+            /_vercel/speed-insights/). Full disclosure lives at /privacidad. */}
         <Analytics />
         <SpeedInsights />
       </body>

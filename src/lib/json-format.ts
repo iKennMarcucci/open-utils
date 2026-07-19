@@ -1,3 +1,5 @@
+import JSON5 from "json5";
+
 export type JsonIssue = {
   message: string;
   /** 1-based, for display. */
@@ -159,12 +161,22 @@ function describe(src: string): JsonIssue {
   return { message: `${what}. Se esperaba ${expected}.`, line, column };
 }
 
-/** `JSON.parse` decides validity; `describe` explains where it went wrong. */
+/**
+ * `JSON.parse` decides strict validity; when it rejects the input we fall back
+ * to JSON5, which accepts the "JavaScript object literal" shape people often
+ * paste — unquoted keys (`{ nombre: "x" }`), single quotes, trailing commas and
+ * comments. Either way the value is normalised to real JSON on the way out.
+ * `describe` still explains where *strict* JSON went wrong when nothing parses.
+ */
 function parse(input: string): { value: unknown } | { issue: JsonIssue } {
   try {
     return { value: JSON.parse(input) };
   } catch {
-    return { issue: describe(input) };
+    try {
+      return { value: JSON5.parse(input) };
+    } catch {
+      return { issue: describe(input) };
+    }
   }
 }
 

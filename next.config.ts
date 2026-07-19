@@ -45,7 +45,49 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
+    // Content-Security-Policy that turns the "100% local, nothing is ever sent"
+    // promise into a browser-enforced guarantee. `connect-src 'self'` blocks any
+    // fetch/XHR/WebSocket/beacon to a third party, so user data physically cannot
+    // leave the device even if a dependency tried. `wasm-unsafe-eval` is required
+    // to instantiate the FFmpeg wasm core; `'unsafe-inline'` on script covers the
+    // pre-paint theme script and the JSON-LD tags. Everything is same-origin
+    // except data:/blob: for locally generated images and object URLs.
+    //
+    // `'unsafe-eval'` is added **only in development**: React's dev build uses
+    // eval() for debugging features (reconstructing callstacks, Fast Refresh).
+    // Production never uses eval(), so the deployed policy stays strict.
+    const isDev = process.env.NODE_ENV === "development";
+    const scriptSrc = [
+      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
+      isDev ? "'unsafe-eval'" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const csp = [
+      "default-src 'self'",
+      scriptSrc,
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      "font-src 'self'",
+      "connect-src 'self' data: blob:",
+      "media-src 'self' blob:",
+      "worker-src 'self' blob:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'self'",
+    ].join("; ");
+
     return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: csp },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
       {
         // The FFmpeg core is a ~32 MB wasm binary served from our own origin and
         // versioned with the deploy. The default `max-age=0, must-revalidate`

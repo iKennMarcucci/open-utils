@@ -10,17 +10,50 @@ Open Utils es una alternativa privada a las herramientas online de PDF, imagen y
 - Gratis, sin registro, sin cuentas y sin marca de agua en los archivos exportados
 - Idioma: español
 
+## Categorías
+
+- [PDF y documentos](https://openutils.co/documentos): Editar, convertir, unir, dividir y comprimir PDF y otros archivos, y consultar sus metadatos, en el navegador.
+- [Imagen y video](https://openutils.co/imagen-y-video): Editar y comprimir imágenes, convertir entre video y GIF, y generar placeholders, favicons, marcas de agua y SVG a PNG, en local.
+- [Código y datos](https://openutils.co/desarrollo): Formatear JSON, codificar Base64 y JWT, convertir formatos y texto, y generar Lorem Ipsum, datos falsos y más.
+
 ## Herramientas
 
+### PDF y documentos
+
 - [Editor de PDF](https://openutils.co/editor-pdf): Anota un PDF en el navegador — escribir texto, dibujar a mano alzada, firmar, resaltar, añadir formas, flechas e imágenes, y rotar, reordenar o eliminar páginas. Exporta a PDF. Son anotaciones superpuestas: no reescribe el texto original del documento. Límite: 100 MB.
-- [Editor de Imagen](https://openutils.co/editor-imagen): Dibuja, escribe, resalta y añade formas y recuadros sobre una imagen. Exporta en PNG o JPG a la resolución original.
 - [PDF a imagen](https://openutils.co/pdf-a-imagen): Convierte cada página de un PDF en una imagen JPG o PNG, renderizada al doble de resolución. Un archivo por página. Límite: 50 MB.
 - [Imagen a PDF](https://openutils.co/imagen-a-pdf): Combina varias imágenes (JPG, PNG, WebP, BMP, GIF) en un único PDF, una página por imagen y con el tamaño exacto de cada una. Las imágenes se reordenan arrastrándolas. Límite: 50 MB por imagen.
 - [Unir PDF](https://openutils.co/unir-pdf): Combina varios PDF e imágenes en un único documento, reordenando los archivos. La numeración de páginas es opcional y está desactivada por defecto. Límite: 50 MB por archivo.
 - [Dividir PDF](https://openutils.co/dividir-pdf): Divide un PDF en varios paquetes de páginas o extrae páginas sueltas. Exporta como PDF, como un PDF por página o como imágenes PNG, y descarga todo en un ZIP. Límite: 100 MB.
+- [Comprimir a ZIP](https://openutils.co/comprimir-zip): Junta varios archivos en un único .zip directamente en el navegador, sin subirlos a ningún servidor.
+- [Descomprimir ZIP](https://openutils.co/descomprimir-zip): Abre un archivo .zip, muestra qué contiene y descarga los archivos que necesites, sin subir nada a ningún servidor.
+- [Ver metadatos](https://openutils.co/ver-metadatos): Muestra los metadatos de una imagen (dimensiones, datos EXIF de la cámara) o de un PDF (autor, título, número de páginas, fechas), sin subir el archivo.
+
+### Imagen y video
+
+- [Editor de Imagen](https://openutils.co/editor-imagen): Dibuja a mano, escribe, resalta y añade formas y recuadros sobre una imagen; recorta, redimensiona y aplica proporciones (16:9, 1:1, 4:3…). Exporta en PNG o JPG.
 - [Video a GIF](https://openutils.co/video-a-gif): Recorta un fragmento de video y expórtalo como GIF, con tres niveles de calidad (Liviano, Normal, Alta). Usa FFmpeg compilado a WebAssembly, en local.
 - [GIF a video](https://openutils.co/gif-a-video): Convierte un GIF animado en un video MP4 (H.264). Convierte el GIF completo, sin recorte.
+- [Generador de imágenes placeholder](https://openutils.co/imagen-placeholder): Crea imágenes placeholder con patrones (sólido, degradado, puntos, cuadrícula, diagonal, ruido, blueprint), colores y texto. Copia como SVG, HTML, CSS o React, y descarga en SVG o PNG.
+- [Generador de favicon](https://openutils.co/generar-favicon): Convierte cualquier imagen en un favicon.ico con varios tamaños (16, 32, 48 y 64 px), sin subir la imagen a ningún servidor.
+- [SVG a PNG](https://openutils.co/svg-a-png): Convierte un SVG en una imagen PNG a la escala que elijas (1×, 2×, 3×, 4×). Pega el código o abre el archivo.
+- [Comprimir imagen](https://openutils.co/comprimir-imagen): Reduce el peso de una imagen ajustando la calidad y el tamaño, en JPEG o WebP, mostrando la reducción al instante, sin subir la imagen.
+- [Marca de agua](https://openutils.co/marca-de-agua): Pon una marca de agua de texto o de logo sobre tus imágenes, con posición, opacidad, tamaño y mosaico, sin subir la imagen.
+
+### Código y datos
+
 - [Formato JSON](https://openutils.co/formato-json): Formatea, indenta, valida y minifica JSON al instante. Procesamiento local, apto para datos sensibles.
+- [Codificar Base64](https://openutils.co/codificar-base64): Convierte texto o archivos a Base64 al instante, con soporte correcto de UTF-8 (acentos y emojis). Procesamiento local.
+- [Decodificar Base64](https://openutils.co/decodificar-base64): Convierte Base64 a texto o de vuelta a un archivo, con UTF-8 correcto. Acepta el alfabeto estándar y el URL-safe (- y _). Procesamiento local.
+- [Convertir mayúsculas y minúsculas](https://openutils.co/convertir-mayusculas): Convierte texto entre MAYÚSCULAS, minúsculas, Title Case, Sentence case, camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE y más.
+- [Generador de Lorem Ipsum](https://openutils.co/lorem-ipsum): Genera texto Lorem Ipsum de relleno indicando cuántos párrafos, frases, palabras o caracteres necesitas.
+- [Decodificar JWT](https://openutils.co/decodificar-jwt): Decodifica un JWT y lee su cabecera y su contenido, con las fechas de emisión y caducidad. No verifica la firma. Seguro para tokens: nada se envía a un servidor.
+- [JSON a TypeScript](https://openutils.co/json-a-typescript): Genera interfaces de TypeScript a partir de un JSON de ejemplo, con tipos anidados y propiedades opcionales.
+- [Símbolos y emojis](https://openutils.co/simbolos-emojis): Busca y copia símbolos especiales y emojis: flechas, matemáticas, moneda, puntuación y caras. Un clic y al portapapeles.
+- [Editor de Markdown](https://openutils.co/editor-markdown): Escribe Markdown y ve el resultado al instante en una vista previa. Exporta a HTML o descarga el .md.
+- [Constructor de Query String](https://openutils.co/query-string): Construye y edita la query string de una URL con parámetros, presets y orden alfabético. Impórtala pegando una URL y expórtala a cURL, fetch o Python.
+- [Generador de datos falsos](https://openutils.co/datos-falsos): Genera datos de prueba con un esquema de campos propio, o importa un OpenAPI 3 / Swagger 2 (JSON o YAML) y genera un ejemplo de petición y respuesta por cada endpoint. Exporta a JSON, CSV, XML, SQL o tabla.
+- [Conversor de formatos](https://openutils.co/convertir-formatos): Convierte datos entre JSON, YAML, CSV y TOML hacia JSON, YAML, CSV, XML, TOML, SQL, Markdown o HTML.
 
 ## Datos citables
 

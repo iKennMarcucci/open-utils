@@ -4,11 +4,15 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  RefreshCw, UploadCloud, Video as VideoIcon, Image as ImageIcon,
+  RefreshCw, Video as VideoIcon, Image as ImageIcon,
   Download, X, AlertCircle, Play, Pause, CheckCircle2,
   Feather, Gauge, Sparkles, ChevronRight, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ExampleButton } from "@/components/ExampleButton";
+import { ToolLayout } from "@/components/ToolLayout";
+import { FileDropzone } from "@/components/FileDropzone";
+import { sampleVideoFile } from "@/lib/samples";
 import { convertMedia, VideoConversionMode, QualityPreset } from "@/lib/video-converter";
 
 // ─── Quality Modal ────────────────────────────────────────────────────────────
@@ -108,10 +112,10 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
             exit={{ opacity: 0, y: 30, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 380, damping: 32 }}
             onClick={e => e.stopPropagation()}
-            className="relative w-full max-w-lg bg-[#0f0f0f] border border-white/8 rounded-panel overflow-hidden shadow-2xl"
+            className="relative w-full max-w-lg bg-surface border border-border rounded-panel overflow-hidden shadow-2xl"
           >
             {/* Top gradient accent */}
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent" />
 
             {/* Header */}
             <div className="px-6 pt-6 pb-4 flex items-start justify-between">
@@ -125,7 +129,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
               </div>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors mt-0.5"
+                className="w-8 h-8 rounded-full bg-surface-strong hover:bg-surface-hover flex items-center justify-center transition-colors mt-0.5"
               >
                 <X className="w-4 h-4 text-foreground-muted" />
               </button>
@@ -146,14 +150,14 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                       "w-full text-left px-4 py-3.5 rounded-panel border transition-all duration-200 relative overflow-hidden",
                       isSelected
                         ? `bg-gradient-to-br ${opt.accent}`
-                        : "bg-white/[0.03] border-white/6 hover:bg-white/[0.06] hover:border-white/10"
+                        : "bg-surface border-border hover:bg-surface-hover hover:border-border-strong"
                     )}
                   >
                     <div className="flex items-center gap-3">
                       {/* Icon */}
                       <div className={cn(
                         "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors",
-                        isSelected ? "bg-white/10 text-foreground" : "bg-white/5 text-foreground-subtle"
+                        isSelected ? "bg-foreground/10 text-foreground" : "bg-foreground/5 text-foreground-subtle"
                       )}>
                         {opt.icon}
                       </div>
@@ -183,14 +187,14 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                       <div className={cn(
                         "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
                         isSelected
-                          ? "border-white bg-white"
+                          ? "border-foreground bg-foreground"
                           : "border-border-strong bg-transparent"
                       )}>
                         {isSelected && (
                           <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="w-2 h-2 rounded-full bg-black"
+                            className="w-2 h-2 rounded-full bg-background"
                           />
                         )}
                       </div>
@@ -208,7 +212,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.15 }}
-                className="mx-4 mt-2 mb-4 bg-white/[0.03] rounded-panel border border-white/6 px-4 py-3.5"
+                className="mx-4 mt-2 mb-4 bg-foreground/5 rounded-panel border border-border px-4 py-3.5"
               >
                 <p className="text-xs text-foreground-muted leading-relaxed mb-3">
                   {active.description}
@@ -253,7 +257,7 @@ function QualityModal({ isOpen, onClose, onSelect, mode }: QualityModalProps) {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => onSelect(selected)}
-                className="w-full h-13 bg-white hover:bg-neutral-100 text-black font-bold rounded-panel flex items-center justify-center gap-2 transition-colors shadow-xl"
+                className="w-full h-13 bg-foreground hover:bg-foreground-muted text-background font-bold rounded-panel flex items-center justify-center gap-2 transition-colors shadow-xl"
               >
                 Convertir ahora
                 <ChevronRight className="w-4 h-4" />
@@ -281,7 +285,6 @@ export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
   const [isConverting, setIsConverting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<{ title: string; message: string; suggestion: string } | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [showQualityModal, setShowQualityModal] = useState(false);
 
   const [duration, setDuration] = useState(0);
@@ -390,30 +393,27 @@ export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 lg:p-12 pb-32">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-12">
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <h2 className="text-4xl font-semibold text-foreground mb-2 tracking-tight">
-            {mode === "video-to-gif" ? "Video a GIF" : "GIF a video"}
-          </h2>
-          <p className="text-foreground-subtle font-medium">Procesa tus videos localmente con privacidad total.</p>
-        </motion.div>
-        <Link
-          href={COUNTERPART[mode].href}
-          title={COUNTERPART[mode].label}
-          aria-label={COUNTERPART[mode].label}
-          className="p-2 rounded-full hover:bg-surface-strong/80 transition-colors text-foreground-muted hover:text-foreground"
-        >
-          <RefreshCw className={cn("w-6 h-6 transition-transform duration-500", mode === "video-to-gif" && "rotate-180")} />
-        </Link>
-      </div>
-
+    <ToolLayout
+      slug={mode === "gif-to-video" ? "gif-a-video" : "video-a-gif"}
+      actions={
+        <div className="flex justify-end">
+          <Link
+            href={COUNTERPART[mode].href}
+            title={COUNTERPART[mode].label}
+            aria-label={COUNTERPART[mode].label}
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+          >
+            <RefreshCw className={cn("w-4 h-4 transition-transform duration-500", mode === "video-to-gif" && "rotate-180")} />
+            <span className="hidden sm:inline">{COUNTERPART[mode].label}</span>
+          </Link>
+        </div>
+      }
+    >
       <div className="grid grid-cols-1 gap-12">
         {/* Input Section */}
         <section>
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-foreground/5 border border-border flex items-center justify-center">
               {mode === "video-to-gif" ? <VideoIcon className="w-5 h-5 text-foreground" /> : <ImageIcon className="w-5 h-5 text-foreground" />}
             </div>
             <h2 className="text-xl font-bold text-foreground">Entrada</h2>
@@ -424,23 +424,27 @@ export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
               <motion.div
                 key="dropzone"
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={(e) => { e.preventDefault(); setIsDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
-                onClick={() => fileInputRef.current?.click()}
-                className={cn(
-                  "relative aspect-video rounded-hero border-2 border-dashed flex flex-col items-center justify-center gap-6 cursor-pointer transition-all duration-300 overflow-hidden group",
-                  isDragging ? "border-white bg-white/10" : "border-border bg-surface/50 hover:bg-surface hover:border-border-strong"
-                )}
               >
-                <div className="w-20 h-20 rounded-hero bg-surface-strong flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <UploadCloud className="w-10 h-10 text-foreground-muted group-hover:text-foreground transition-colors" />
-                </div>
-                <div className="text-center">
-                  <p className="text-xl font-bold text-foreground mb-2">{mode === "video-to-gif" ? "Importa tu Video" : "Importa tu GIF"}</p>
-                  <p className="text-foreground-subtle font-medium">Arrastra el archivo o haz clic para explorar</p>
-                </div>
-                <input type="file" ref={fileInputRef} onChange={(e) => { const s = e.target.files?.[0]; if (s) handleFile(s); }} accept={mode === "video-to-gif" ? "video/*" : "image/gif"} className="hidden" />
+                <FileDropzone
+                  onFiles={(files) => handleFile(files[0])}
+                  accept={mode === "video-to-gif" ? "video/*" : "image/gif"}
+                  title={mode === "video-to-gif" ? "Importa tu Video" : "Importa tu GIF"}
+                  subtitle="Arrastra el archivo o haz clic para explorar"
+                  example={
+                    mode === "video-to-gif" ? (
+                      <ExampleButton
+                        onClick={() =>
+                          sampleVideoFile()
+                            .then(handleFile)
+                            .catch((err: Error) =>
+                              setError({ title: "No se pudo generar el ejemplo", message: err.message, suggestion: "Sube tu propio video para probar la herramienta." })
+                            )
+                        }
+                      />
+                    ) : undefined
+                  }
+                  className="aspect-video min-h-0 rounded-hero"
+                />
               </motion.div>
             ) : (
               <motion.div key="preview" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface border border-border rounded-hero overflow-hidden p-6">
@@ -452,7 +456,7 @@ export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
                         {isPlaying ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current ml-1" />}
                       </button>
                     </div>
-                    <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-xs font-mono text-foreground">
+                    <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-xs font-mono text-white">
                       {formatTime(currentTime)} / {formatTime(duration)}
                     </div>
                   </div>
@@ -461,7 +465,7 @@ export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
                     {/* A GIF renders as an image, not a <video> element. */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={fileUrl!} alt="GIF a convertir" className="w-full h-full object-contain" />
-                    <div className="absolute top-4 left-4 px-2.5 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-[11px] font-semibold uppercase tracking-wider text-foreground">
+                    <div className="absolute top-4 left-4 px-2.5 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-[11px] font-semibold uppercase tracking-wider text-white">
                       GIF
                     </div>
                   </div>
@@ -478,7 +482,7 @@ export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
                       </div>
                       <div ref={timelineRef} className="relative h-12 flex items-center group/range">
                         <div className="absolute h-1.5 w-full bg-surface-strong rounded-full" />
-                        <div className="absolute h-1.5 bg-white/20 rounded-full" style={{ left: `${(startTime / duration) * 100}%`, right: `${100 - (endTime / duration) * 100}%` }} />
+                        <div className="absolute h-1.5 bg-foreground/20 rounded-full" style={{ left: `${(startTime / duration) * 100}%`, right: `${100 - (endTime / duration) * 100}%` }} />
                         <div
                           onPointerDown={(e) => { e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); }}
                           onPointerMove={(e) => {
@@ -502,8 +506,8 @@ export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
                           setCurrentTime(t);
                           if (videoRef.current) videoRef.current.currentTime = t;
                         }} />
-                        <div className="absolute h-8 w-1.5 bg-white z-50 pointer-events-none rounded-full shadow-[0_0_15px_rgba(255,255,255,0.4)]" style={{ left: `${(startTime / duration) * 100}%`, transform: 'translateX(-50%)' }} />
-                        <div className="absolute h-8 w-1.5 bg-white z-50 pointer-events-none rounded-full shadow-[0_0_15px_rgba(255,255,255,0.4)]" style={{ left: `${(endTime / duration) * 100}%`, transform: 'translateX(-50%)' }} />
+                        <div className="absolute h-8 w-1.5 bg-foreground z-50 pointer-events-none rounded-full shadow-[0_0_15px_rgba(0,0,0,0.25)]" style={{ left: `${(startTime / duration) * 100}%`, transform: 'translateX(-50%)' }} />
+                        <div className="absolute h-8 w-1.5 bg-foreground z-50 pointer-events-none rounded-full shadow-[0_0_15px_rgba(0,0,0,0.25)]" style={{ left: `${(endTime / duration) * 100}%`, transform: 'translateX(-50%)' }} />
                         <input type="range" min="0" max={duration} step="0.01" value={startTime} onChange={handleStartTimeChange} className="absolute w-full appearance-none bg-transparent pointer-events-none z-60 cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:h-10 [&::-webkit-slider-thumb]:bg-transparent [&::-webkit-slider-thumb]:appearance-none" />
                         <input type="range" min="0" max={duration} step="0.01" value={endTime} onChange={handleEndTimeChange} className="absolute w-full appearance-none bg-transparent pointer-events-none z-60 cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:h-10 [&::-webkit-slider-thumb]:bg-transparent [&::-webkit-slider-thumb]:appearance-none" />
                       </div>
@@ -538,19 +542,19 @@ export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
                           "relative px-6 h-12 rounded-panel font-bold transition-all shadow-xl flex items-center gap-2.5 overflow-hidden",
                           isConverting
                             ? "bg-surface-strong text-foreground-subtle cursor-not-allowed"
-                            : "bg-white text-black hover:shadow-white/20"
+                            : "bg-foreground text-background hover:opacity-90"
                         )}
                       >
                         {isConverting ? (
                           <>
-                            <div className="w-4 h-4 border-2 border-border-strong border-t-white rounded-full animate-spin" />
+                            <div className="w-4 h-4 border-2 border-border-strong border-t-foreground rounded-full animate-spin" />
                             <span>Procesando {Math.round(progress)}%</span>
                           </>
                         ) : (
                           <>
                             <span>Convertir</span>
                             {/* Keyboard shortcut badge */}
-                            <span className="flex items-center gap-0.5 bg-black/10 rounded-lg px-1.5 py-0.5 text-[11px] font-semibold text-black/50">
+                            <span className="flex items-center gap-0.5 bg-background/20 rounded-lg px-1.5 py-0.5 text-[11px] font-semibold text-background/60">
                               <ChevronRight className="w-3 h-3" />
                             </span>
                           </>
@@ -567,7 +571,7 @@ export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
         {/* Output Section */}
         <section>
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-foreground/5 border border-border flex items-center justify-center">
               <CheckCircle2 className="w-5 h-5 text-foreground" />
             </div>
             <h2 className="text-xl font-bold text-foreground">Resultado</h2>
@@ -599,7 +603,7 @@ export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
             ) : isConverting ? (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="aspect-video rounded-hero bg-surface/50 border border-border border-dashed flex flex-col items-center justify-center gap-6">
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full border-4 border-border border-t-white animate-spin" />
+                  <div className="w-24 h-24 rounded-full border-4 border-border border-t-foreground animate-spin" />
                   <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-foreground">{Math.round(progress)}%</div>
                 </div>
                 <div className="text-center">
@@ -638,19 +642,19 @@ export function VideoConverterUi({ mode }: { mode: VideoConversionMode }) {
                 <div className="flex-1">
                   <h3 className="text-2xl font-bold text-foreground mb-2">{error.title}</h3>
                   <p className="text-foreground-muted mb-6 leading-relaxed">{error.message}</p>
-                  <div className="bg-black/40 rounded-panel p-5 border border-white/5">
+                  <div className="bg-background-elevated rounded-panel p-5 border border-border">
                     <p className="text-xs text-foreground-subtle font-bold mb-2 uppercase tracking-widest">Sugerencia</p>
                     <p className="text-sm text-foreground-muted">{error.suggestion}</p>
                   </div>
                 </div>
               </div>
-              <button onClick={() => setError(null)} className="mt-8 w-full bg-white hover:bg-neutral-200 text-black h-14 rounded-panel font-bold transition-all shadow-xl">
+              <button onClick={() => setError(null)} className="mt-8 w-full bg-foreground hover:bg-foreground-muted text-background h-14 rounded-panel font-bold transition-all shadow-xl">
                 Entendido
               </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </ToolLayout>
   );
 }

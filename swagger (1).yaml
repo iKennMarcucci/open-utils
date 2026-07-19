@@ -1,0 +1,2511 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: App Banca Movil Bancamía - Transfiya
+  description: "Swagger para la definición de los servicios para el MVP de Banca Móvil de Bancamía."
+host: "movilidadedpqa-1968232623.us-east-1.elb.amazonaws.com:6777"
+basePath: "/transfiya"
+schemes:
+  - https
+securityDefinitions:
+  Bearer:
+    description: El token se obtiene tras realizar el login en la aplicación y es utilizado para identificar al usuario a lo largo de todos los servicios de forma inequivoca y segura.
+    type: apiKey
+    name: Authorization
+    in: header
+paths:
+  /consultaWallet:
+    post:
+      description: Servicio que permite consultar el wallet si existe en base de datos de transfiya
+      operationId: postConsultaWallet
+      tags :
+        - wallet
+      parameters:
+        - in: body
+          name: celular
+          description: Numero de celular del cliente
+          schema:
+            $ref: '#/definitions/Celular'
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            $ref: '#/definitions/Estado'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: No se cumple con las condiciones minimas del servicio
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /usuario/signer/v1:
+    post:
+      description: Servicio que permite registrar los datos del usuario para generar el wallet.
+      operationId: generateSigner
+      tags:
+        - signer
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: usuario
+          description: Datos necesarios para registro del cliente para el uso de transfiya.
+          schema:
+            $ref: '#/definitions/Usuario'
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SignerResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: No se cumple con las condiciones minimas del servicio
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /register-key:
+    post:
+      description: Servicio que permite registrar los datos del usuario para generar el wallet.
+      operationId: registerKey
+      tags:
+        - breB
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: usuario
+          description: Datos necesarios para registro del cliente para el uso de transfiya.
+          schema:
+            $ref: '#/definitions/RegisterKey'
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+              $ref: '#/definitions/RegisterKeyResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: No se cumple con las condiciones minimas del servicio
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /query-key:
+    get:
+      description: Servicio que permite listar las transferencias de solicitud de dinero en transfiya
+      operationId: queryKey
+      tags:
+        - breB
+      security:
+        - Bearer: []
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/QueryKeyResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /solicitar:
+    post:
+      description: Servicio que nos permite solicitar dinero.
+      operationId: postSolicitarUsuario
+      tags:
+        - transfiya
+      security:
+        - Bearer: []
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: Usuario
+          description: Datos solicitados para el servicio
+          schema:
+            $ref: '#/definitions/DatosUsuario'
+      responses:
+        '200':
+          description: Respuesta en caso de exito
+          schema:
+            $ref: '#/definitions/Solicitar'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+  /solicitar/solicitudes:
+    get:
+      description: Servicio que permite listar las transferencias de solicitud de dinero en transfiya
+      operationId: getSolicitudes
+      tags:
+        - transfiya
+      security:
+        - Bearer: []
+      parameters:
+        - in: query
+          name: celular
+          description: Numero de celular encriptado.
+          type: string
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Solicitud'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /solicitar/confirmar:
+    post:
+      description: Servicio que permite generar una OTP para el debito a través transfiya solicitar.
+      operationId: postValidateOtpSolicitud
+      tags:
+        - transfiya
+      security:
+        - Bearer: []
+      parameters:
+        - name: debito
+          required: true
+          description: Informacion para generar OTP para el debito a través de transfiya.
+          in: body
+          schema:
+            $ref: '#/definitions/ConfirmacionSolicitud'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          headers:
+            X-PHRASE:
+              type: string
+              description: Número de la transacción para validar OTP.
+            X-MAC:
+              type: string
+              description: Hash que permite validar la respuest del servicio
+          schema:
+            $ref: '#/definitions/AcceptResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /solicitar/aceptar:
+    post:
+      description: Servicio que permite generar una OTP para el debito a través transfiya solicitar.
+      operationId: postGenerateOtpSolicitud
+      tags:
+        - transfiya
+      security:
+        - Bearer: []
+      parameters:
+        - name: debito
+          required: true
+          description: Informacion para generar OTP para el debito a través de transfiya.
+          in: body
+          schema:
+            $ref: '#/definitions/AcceptRequest'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          headers:
+            X-PHRASE:
+              type: string
+              description: Número de la transacción para validar OTP.
+            X-MAC:
+              type: string
+              description: Hash que permite validar la respuest del servicio
+          schema:
+            $ref: '#/definitions/NotificacionOtp'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /solicitar/rechazar:
+    post:
+      description: Servicio que permite rechazar una o varias solicitudes.
+      operationId: postRechazarSolicitud
+      tags:
+        - transfiya
+      security:
+        - Bearer: []
+      parameters:
+        - name: RechazoSolicitud
+          required: true
+          description: Informacion para rechazar una solicitud a través de transfiya.
+          in: body
+          schema:
+            $ref: '#/definitions/Rechazo'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            $ref: '#/definitions/RespuestaRechazo'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /solicitar/comprobante:
+    post:
+      description: Obtener reporte de cierre a partir de la cadena cifrada
+      operationId: postVoucherSolicitudes
+      tags:
+        - transfiya
+        - reporte
+      security:
+        - Bearer: []
+      parameters:
+        - name: datosComprobante
+          in: body
+          description: "Datos del reporte en formato de cadena"
+          required: true
+          schema:
+            $ref: '#/definitions/DatosComprobante'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK - PDF generado correctamente en base 64
+          schema:
+            type: string
+        404:
+          description: No encontrado - No se encontró el registro
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+  /defaultSignerUser:
+    get:
+      description: Servicio que permite verificar si el cliente cuenta con un signer por default
+      operationId: getSignerDefault
+      tags:
+        - signer
+      security:
+        - Bearer: []
+      parameters:
+        - in: query
+          name: celular
+          description: Numero de celular encriptado.
+          type: string
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            $ref: '#/definitions/SignerDefault'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: No se cumple con las condiciones minimas del servicio
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      description: Servicio que permite actualizar la cuenta por defecto al cliente.
+      operationId: putSignerDefault
+      tags:
+        - signer
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: cuentaUsuario
+          description: Datos que se requieren para la actualización del signer por defecto.
+          schema:
+            $ref: '#/definitions/CuentaUsuario'
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            $ref: '#/definitions/SignerResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: No se cumple con las condiciones minimas del servicio
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /credito:
+    get:
+      description: Servicio que permite recibir las tranferencias rebidas mediante transfiya
+      operationId: getCredito
+      tags:
+        - transfiya
+      security:
+        - Bearer: []
+      parameters:
+        - in: query
+          name: celular
+          description: Numero de celular encriptado.
+          type: string
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Credito'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /reception/accept:
+    post:
+      description: Servicio que permite aceptar recibir dinero.
+      operationId: postAcceptReception
+      tags:
+        - transfiya
+      security:
+        - Bearer: []
+      consumes:
+        - application/json
+      parameters:
+        - name: confirmacionAceptacionTransaccion
+          required: true
+          description: Informacion para aceptar la recepcion de dinero desde trasnfiya.
+          in: body
+          schema:
+            $ref: '#/definitions/AcceptReceiver'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito
+          schema:
+            $ref: '#/definitions/AcceptResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /reception/reject:
+    post:
+      description: Servicio que permite rechazar la recepcion las transacciones de transfiya de recibir dinero.
+      operationId: postRechazoRecibir
+      tags:
+        - transfiya
+      security:
+        - Bearer: [ ]
+      consumes:
+        - application/json
+      parameters:
+        - name: RechazoRecibir
+          required: true
+          description: Informacion para rechazar las transacciones pendientes de recibir.
+          in: body
+          schema:
+            $ref: '#/definitions/Rechazo'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito
+          schema:
+            $ref: '#/definitions/RespuestaRechazo'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /movimientos:
+    get:
+      description: Servicio que permite generar la lista de movimientos realizados por transfiya.
+      operationId: getMovements
+      tags:
+        - transfiya
+      security:
+        - Bearer: []
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MovimientoTransfiya'
+        '204':
+          description: Respuesta en caso de exito si no encuentra ningun movimiento.
+
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /debito/otp:
+    post:
+      description: Servicio que permite generar una OTP para el debito a través transfiya.
+      operationId: postGenerateOtpDebit
+      tags:
+        - transfiya
+      security:
+        - Bearer: []
+      parameters:
+        - name: debito
+          required: true
+          description: Informacion para generar OTP para el debito a través de transfiya.
+          in: body
+          schema:
+            $ref: '#/definitions/Debito'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          headers:
+            X-PHRASE:
+              type: string
+              description: Número de la transacción para validar OTP.
+            X-MAC:
+              type: string
+              description: Hash que permite validar la respuest del servicio
+          schema:
+            $ref: '#/definitions/NotificacionOtp'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /debito:
+    post:
+      description: Servicio que permite realizar un debito en la cuenta para ser enviado a traves de transfiya.
+      operationId: postDebito
+      tags:
+        - transfiya
+      security:
+        - Bearer: []
+      parameters:
+        - name: confirmacionDebito
+          required: true
+          description: datos para realizar el debito
+          in: body
+          schema:
+            $ref: '#/definitions/ConfirmacionDebito'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito
+          schema:
+            $ref: '#/definitions/OperacionDebito'
+          headers:
+            X-MAC:
+              type: string
+              description: Hash que permite validar la respuest del servicio
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /debito/comprobante:
+    get:
+      description: Consulta de la constancia y verificacion de los datos al momento de realizar el envio de dinero
+      operationId: getVoucherMovement
+      tags:
+        - transfiya
+      security:
+        - Bearer: []
+      parameters:
+        - name: idMovimiento
+          type: string
+          in: query
+          required: true
+          description: Identificador del movimiento
+      produces:
+        - application/json
+        - application/pdf
+        - application/octet-stream
+      responses:
+        '200':
+          description: Voucher de movimiento en PDF
+          schema:
+            type: string
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /manage-key:
+    post:
+      description: Servicio que permite actualizar los datos del usuario para generar el wallet.
+      operationId: manageKey
+      tags:
+        - breB
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: manageKey
+          description: Datos necesarios para la actualización de llaves para el uso de transfiya.
+          schema:
+            $ref: '#/definitions/ManageKey'
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            $ref: '#/definitions/RegisterKeyResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: No se cumple con las condiciones minimas del servicio
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /inactive-key:
+    post:
+      description: Servicio que permite cancelar las llaves del usuario.
+      operationId: inactiveKey
+      tags:
+        - breB
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: inactiveKey
+          description: Datos necesarios para la cancelacion de llaves para el uso de transfiya.
+          schema:
+            $ref: '#/definitions/InactiveKey'
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            $ref: '#/definitions/RegisterKeyResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: No se cumple con las condiciones minimas del servicio
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+
+  /terminosCondiciones:
+    get:
+      description: Servicio que permite consultar los terminos y condiciones de SPI
+      operationId: getTerminosCondiciones
+      tags:
+        - terminos
+      parameters:
+        - name: tipoDocumento
+          in: query
+          description: tipo de documento del cliente a consultar.
+          type: string
+        - name: numeroDocumento
+          in: query
+          description: numero de documento del cliente a consultar.
+          type: string
+        - name: version
+          in: query
+          description: numero de la versión de la aplicacion.
+          type: string
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            $ref: '#/definitions/TerminosCondiciones'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: No se cumple con las condiciones minimas del servicio
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+        description: Servicio que permite consultar el wallet si existe en base de datos de transfiya
+        operationId: postTerminosCondiciones
+        tags :
+          - terminos
+        parameters:
+          - in: body
+            name: consultaTerminos
+            description: Actualización de los terminos y condiciones
+            schema:
+              $ref: '#/definitions/TerminosRequest'
+        responses:
+          '200':
+            description: Respuesta en caso de exito.
+            schema:
+              $ref: '#/definitions/ResponseTerminos'
+          '400':
+            description: Respuesta en caso de error
+            schema:
+              $ref: '#/definitions/Error'
+          '412':
+            description: No se cumple con las condiciones minimas del servicio
+            schema:
+              $ref: '#/definitions/Error'
+          '500':
+            description: Error inesperado
+            schema:
+              $ref: '#/definitions/Error'
+  /register-key-mid:
+    post:
+      operationId: post-register-key-mid
+      summary: Create New Key
+      tags:
+        - breB
+      parameters:
+        - in: body
+          name: Register Key MID
+          description: Datos necesarios para registro del cliente para el uso de transfiya.
+          required: true
+          schema:
+            type: object
+            title: RegisterKeyMidRequest
+            required:
+              - nameEnterprise
+              - name
+              - lastName
+              - phone
+              - bankAccountType
+              - tokenAccountNumber
+              - email
+            properties:
+              nameEnterprise:
+                type: string
+                minLength: 2
+                maxLength: 50
+                example: TecnoNova Solutions
+                description: Nombre de la empresa, acepta números y letras, no acepta carácteres especiales.
+              name:
+                type: string
+                minLength: 2
+                maxLength: 50
+                example: Olga
+                description: Nombre de la persona, acepta números y letras, no acepta carácteres especiales.
+              lastName:
+                type: string
+                minLength: 2
+                maxLength: 50
+                example: Rodrigez
+                description: Apellido de la persona, acepta números y letras, no acepta carácteres especiales.
+              phone:
+                type: string
+                maxLength: 10
+                example: 3226159752
+                description: Numero de celular de la persona, acepta números, no acepta carácteres especiales.
+              bankAccountType:
+                type: string
+                example: CAHO
+                description: Tipo de la cuenta en bancamia
+              tokenAccountNumber:
+                type: string
+                maxLength: 34
+                example: 9002345678
+                description: Numero de cuenta bancaria del usuario.
+              email:
+                type: string
+                description: "Email asociado a la llave con formato RFC5321/5322"
+                format: "RFC5321/5322"
+                example: micorreo@midominio.com
+              personType:
+                type: string
+                minLength: 2
+                maxLength: 50
+                example: PERSON
+                description: "Se relaciona a el tipo de llave person o business."
+              device:
+                $ref: '#/definitions/Dispositivo'
+      responses:
+        '200':
+          description: OK - Llave creada correctamente
+          schema:
+            $ref: '#/definitions/RegisterKeyResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+  /update-key-mid:
+    put:
+      operationId: put-update-key-mid
+      summary: Update Key Mid
+      tags:
+        - breB
+      parameters:
+        - in: body
+          name: updateKeyMid
+          description: Datos necesarios para registro del cliente para el uso de transfiya.
+          required: true
+          schema:
+            title: UpdateKeyMidRequest
+            type: object
+            required:
+              - bankAccountType
+              - tokenAccountNumber
+              - key
+            properties:
+              bankAccountType:
+                type: string
+                description: >-
+                  Tipo del medio de pago asociado a la llave
+                example: Cuentamia
+              tokenAccountNumber:
+                title: AccountNo
+                description: >-
+                  Identificación numérica única de la cuenta que se asociará a la llave
+                type: string
+                example: 230040122345
+                maxLength: 34
+              key:
+                title: Llave Merchant ID
+                description: valor de la llave merchant id
+                type: string
+                maxLength: 10
+                minLength: 10
+                example: 0010255689
+              device:
+                $ref: '#/definitions/Dispositivo'
+      responses:
+        '200':
+          description: OK - Comercio Registrado o Actualizado
+          schema:
+            $ref: '#/definitions/RegisterKeyResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+  /cancel-key-mid:
+    post:
+      operationId: post-cancel-key-mid
+      summary: Cancel key Mid
+      tags:
+        - breB
+      parameters:
+        - in: body
+          name: CancelkeyRequest
+          description: Datos para la actualización de la clave.
+          required: true
+          schema:
+            title: CancelKeyMidRequest
+            type: object
+            required:
+              - key
+            properties:
+              key:
+                title: Llave Merchant ID
+                description: valor de la llave merchant id
+                example: '0010555689'
+                type: string
+                maxLength: 10
+                minLength: 10
+              device:
+                $ref: '#/definitions/Dispositivo'
+      responses:
+        '200':
+          description: OK - Comercio Registrado o Actualizado
+          schema:
+            $ref: '#/definitions/RegisterKeyResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: No se cumple con las condiciones minimas del servicio
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /resolve-key:
+    post:
+      description: Servicio que permite resolver las llaves del usuario en otras entidades.
+      operationId: resolveKey
+      tags:
+        - breB
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: resolveKey
+          description: Datos necesarios para resolver llaves para el uso de transfiya.
+          schema:
+            $ref: '#/definitions/ResolveKey'
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            $ref: '#/definitions/ResponseResolveKey'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: No se cumple con las condiciones minimas del servicio
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /generate-otp:
+    post:
+      description: Servicio para la generación de otp para el debito SPI.
+      operationId: postGenerateOtpDebitSpi
+      tags:
+        - breB
+      security:
+        - Bearer: [ ]
+      parameters:
+        - name: debitSpi
+          required: true
+          description: Request para la generacion de la otp para debito SPI
+          in: body
+          schema:
+            $ref: '#/definitions/DebitSpiOtp'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito
+          schema:
+            $ref: '#/definitions/ResponseOtp'
+          headers:
+            X-MAC:
+              type: string
+              description: Hash que permite validar la respuest del servicio
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /debit-spi:
+    post:
+      description: Servicio que permite realizar un debito en la cuenta para ser enviado a traves de transfiya.
+      operationId: postDebitSpi
+      tags:
+        - breB
+      parameters:
+        - name: confirmationDebitSpi
+          required: true
+          description: datos para realizar el debito
+          in: body
+          schema:
+            $ref: '#/definitions/ConfirmationDebitSpi'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito
+          schema:
+            $ref: '#/definitions/OperacionDebito'
+          headers:
+            X-MAC:
+              type: string
+              description: Hash que permite validar la respuest del servicio
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /change-status-key:
+    post:
+      description: Servicio que permite cancelar las llaves del usuario.
+      operationId: changeStatusKey
+      tags:
+        - breB
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: changeStatusKey
+          description: Datos necesarios para la cancelacion de llaves para el uso de transfiya.
+          schema:
+            $ref: '#/definitions/ChangeStatusKey'
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            $ref: '#/definitions/RegisterKeyResponse'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '412':
+          description: No se cumple con las condiciones minimas del servicio
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /validate-status-key:
+    get:
+      description: Consulta del estado de las llaves que se encuentran en estado bloqueado para aplicar prorroga
+      operationId: getValidateStatusKey
+      tags:
+        - breB
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Entrega arreglo de llaves bloqueadas con su estado actual
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ValidateStatusKeyResponse'
+          headers:
+            X-MAC:
+              type: string
+              description: Hash que permite validar la respuest del servicio
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /extension-spi:
+    post:
+      description: Servicio que permite realizar un debito en la cuenta para ser enviado a traves de transfiya.
+      operationId: postExtensionSpi
+      tags:
+        - breB
+      parameters:
+        - name: extensionSpi
+          required: true
+          description: datos para realizar el proceso de prorroga
+          in: body
+          schema:
+            $ref: '#/definitions/ExtensionSpi'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ValidateStatusKeyResponse'
+          headers:
+            X-MAC:
+              type: string
+              description: Hash que permite validar la respuest del servicio
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /status-transaction:
+    get:
+      description: Servicio que permite consultar la transaccion de envio y/o recepcion por cus.
+      operationId: getTransactionByCus
+      tags:
+        - breB
+      parameters:
+        - name: "cus"
+          in: "query"
+          description: "Código Único de la Transacción"
+          required: true
+          type: "string"
+      responses:
+        '200':
+          description: Respuesta en caso de exito.
+          schema:
+            $ref: '#/definitions/TransactionSpiDTO'
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /send-qr:
+    post:
+      description: Servicio para la resolucion del qr.
+      operationId: postSendQr
+      tags:
+        - breB
+      security:
+        - Bearer: [ ]
+      parameters:
+        - name: qrRequest
+          required: true
+          description: Request para la resolucion del qr
+          in: body
+          schema:
+            $ref: '#/definitions/QrRequest'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Respuesta en caso de exito
+          schema:
+            $ref: '#/definitions/QrResponse'
+          headers:
+            X-MAC:
+              type: string
+              description: Hash que permite validar la respuest del servicio
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /create-qr-key-spi:
+    post:
+      description: Servicio que permite generar un código QR de ACH y almacenarlo asociado a una llave Transfiya.
+      operationId: createQrKeySpi
+      tags:
+        - breB
+      parameters:
+        - name: createQrKey
+          required: true
+          description: Datos necesarios para la generación del código QR ACH
+          in: body
+          schema:
+            $ref: '#/definitions/NewQrAchRequestDTO'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Código QR creado y almacenado con éxito
+          schema:
+            $ref: '#/definitions/QRCodeResponse'
+          headers:
+            X-MAC:
+              type: string
+              description: Hash que permite validar la integridad de la respuesta
+        '400':
+          description: Datos de entrada inválidos o error en cifrado
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: No autorizado
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error interno en el procesamiento o falla técnica
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /qrcode:
+    get:
+      description: Servicio retorna el código QR asociado a una llave Transfiya, si existe y esta activo, para ser utilizado en pagos ACH.
+      operationId: getQrCode
+      tags:
+        - breB
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Código QR creado y almacenado con éxito
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/QRCodeResponse'
+        '204':
+          description: No se encontró un código QR activo
+        '400':
+          description: Datos de entrada inválidos o error en cifrado
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: No autorizado
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error interno en el procesamiento o falla técnica
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /qrcode/pdf/{id}:
+    get:
+      description: Servicio que retornará un pdf con el codigo qr en el medio y los datos del cliente (nombre completo y alias de la llave) debajo del código QR, para ser utilizado en pagos ACH.
+      operationId: getQrCodePdf
+      tags:
+        - breB
+      parameters:
+        - in: path
+          name: id
+          description: id del código qr a consultar
+          type: string
+          required: true
+      produces:
+        - application/json
+        - application/pdf
+        - application/octet-stream
+      responses:
+        '200':
+          description: Voucher de movimiento en PDF
+          schema:
+            type: string
+        '400':
+          description: Respuesta en caso de error
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Respuesta en caso de acceso no autorizado a la operación
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Respuesta en caso de error interno en el servidor
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+  /update-qr-key-spi:
+    post:
+      description: Servicio que permite generar un código QR de ACH y almacenarlo asociado a una llave Transfiya.
+      operationId: updateQrKeySpi
+      tags:
+        - breB
+      parameters:
+        - name: createQrKey
+          required: true
+          description: Datos necesarios para la generación del código QR ACH
+          in: body
+          schema:
+            $ref: '#/definitions/UpdateQrAchRequestDTO'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Código QR creado y almacenado con éxito
+          schema:
+            $ref: '#/definitions/QRCodeResponse'
+          headers:
+            X-MAC:
+              type: string
+              description: Hash que permite validar la integridad de la respuesta
+        '400':
+          description: Datos de entrada inválidos o error en cifrado
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: No autorizado
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Error interno en el procesamiento o falla técnica
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Error inesperado
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Estado:
+    title: Estado
+    description: Estado en que se entrega dicho wallet
+    properties:
+      estado:
+        type: string
+        description: Estado de consulta del wallet
+  Celular:
+    title: Celular
+    description: Numero del celular a consultar en base de datos si existe algun wallet registrado con ese numero de celular
+    properties:
+      celular:
+        type: string
+        description: Numero de celular del cliente
+  Usuario:
+    title: Usuario
+    description: Datos de personales del usuario para realizar el registro y posterior el uso de la aplicación transfiya.
+    properties:
+      tipoIdentificacion:
+        type: string
+        description: Tipo de identificacion del cliente.
+      numeroIdentificacion:
+        type: string
+        description: Numero de identificacion del usuario.
+      nombres:
+        type: string
+        description: Primer y segundo nombre del cliente.
+      apellidos:
+        type: string
+        description: Primer y segundo apellido del cliente.
+      celular:
+        type: string
+        description: Numero de celular del usuario (Debe iniciar por 573, debe contener 12 caracteres)
+        pattern: '^\d{12}$'
+      email:
+        type: string
+        description: Correo electronico del cliente.
+      cuentas:
+        type: array
+        description: Numero de cuenta del cliente
+        items: {
+          type: string
+        }
+      descripcion:
+        type: string
+        description: descripcion para el uso de los datos..
+      dispositivo:
+        $ref: '#/definitions/Dispositivo'
+    required:
+      - tipoIdentificacion
+      - numeroIdentificacion
+      - nombres
+      - apellidos
+      - celular
+      - cuenta
+      - email
+  DatosUsuario:
+    title: DatosUsuario
+    description: Datos que se requieren para solicitar algun dinero por medio de transfiya
+    properties:
+      tokenCuenta:
+        type: string
+        description: numero de cuenta donde se acreditara la solicitud.
+      celular:
+        type: string
+        description: numero telefonico al cual se le solicita el dinero.
+      celularUsuario:
+        type: string
+        description: Numero de telefono del usuario logeado en la aplicación encriptado.
+      monto:
+        type: string
+        description: Dinero que solicitara por medio de transfiya
+      descripcion:
+        type: string
+        description: Espacio para la descripcion de porque se hace la solicitud
+      dispositivo:
+        $ref: '#/definitions/Dispositivo'
+  Solicitar:
+    title: Solicitar
+    description: Datos a entregar para finalizar la transaccion
+    properties:
+      numeroTransaccion:
+        type: string
+        description: Numero dela tranferencia realizada
+      valorSolicitado:
+        type: string
+        description: Dinero que se solicito
+      celular:
+        type: string
+        description: Numero de telefono al que se solicito
+      fechaTransaccion:
+        type: string
+        pattern: dd/MM/aaaa
+        description: Fecha de la operación.
+      horaTransaccion:
+        type: string
+        pattern: HH:mm:ss
+        description: Hora de la operación.
+      cus:
+        type: string
+        description: Identificador unico de la transacción ante ACH
+  CuentaUsuario:
+    title: Cuenta
+    description: Datos que se requieren para la actualización del signer por defecto
+    properties:
+      numeroCuenta:
+        type: string
+        description: Numero de cuenta que se desea actualizar como signer por defecto.
+      celular:
+        type: string
+        description: Numero de telefono encriptado.
+  SignerResponse:
+    title: UpdateSignerDefault
+    description: Datos para indicar la correcta actualización
+    properties:
+      numTx:
+        type: string
+        description: Numero de transaccion realizada
+      created:
+        type: string
+        description: Fecha de la operación.
+  SignerDefault:
+    title: SignerDefault
+    description: Datos que se mostraran al front para identificar que hay un signer default registrado
+    properties:
+      default:
+        type: string
+        description: Numero de cuenta que se encuentra por defecto
+      error:
+        type: string
+        description: Numero de error al cual se le adjudica la respuesta
+      mensaje:
+        type: string
+        description: Mensaje de identificacion del error
+  RegisterKeyResponse:
+    title: RegisterKeyResponse
+    description: Datos para indicar el correcto registro de llave
+    properties:
+      id:
+        type: string
+        description: Indicador unico
+      date:
+        type: string
+        description: Fecha de la operación.
+      hour:
+        type: string
+        description: Hora de la operación.
+  Credito:
+    title: Credito
+    properties:
+      nroReferenciaTransaccion:
+        type: string
+        description: Numero de referencia de la transaccion
+      nombreReferenciaTransaccion:
+        type: string
+        description: Nombre y apellido de la persona que envia dinero
+      monto:
+        type: string
+        description: Ingresos del cliente.
+      celular:
+        type: string
+        description: Numero de celular del que le estan haciendo el envio
+      descripcion:
+        type: string
+        description: Concepto por el cual se realizo el envio
+      fecha:
+        type: string
+        description: Fecha de la transaccion
+  Solicitud:
+    title: Solicitud
+    properties:
+      nombreReferenciaTransaccion:
+        type: string
+        description: Numero de referencia de la transaccion
+      nroReferenciaTransaccion:
+        type: string
+        description: Numero de referencia de la transaccion
+      monto:
+        type: string
+        description: Ingresos del cliente.
+      celular:
+        type: string
+        description: Numero de celular del que le estan haciendo el envio
+      descripcion:
+        type: string
+        description: Concepto por el cual se realizo el envio
+      fecha:
+        type: string
+        description: Fecha de la transaccion
+  AcceptResponse:
+    title: Confirmacion solicitud exitosa de aceptar transaccion de recibir
+    description: Informacion para confirmar que se realizo correctamente la transaccion de aceptar la trasnferencia de recibir dinero.
+    properties:
+      id:
+        type: string
+        description: Numero de identificacion de la accion al aceptar recibir la transaccion.
+      autorizacion:
+        type: string
+        description: Numero de la autorizacion.
+      monto:
+        type: string
+        description: Monto de la transaccion aceptada.
+      cuenta:
+        type: string
+        description: Cuenta destino de la transaccion.
+      fecha:
+        type: string
+        description: Fecha de la transaccion.
+      hora:
+        type: string
+        description: Hora de la transaccion.
+      mensaje:
+        type: string
+        description: Mensaje de la respuesta del servicio.
+  RespuestaRechazo:
+    title: RespuestaRechazo
+    description: Respuesta de rechazo de las transacciones de transfiya.
+    properties:
+      codigoAutorizacion:
+        type: string
+        description: Numero de la autorizacion.
+      transaccionesRechazadas:
+        type: array
+        items:
+          type: string
+      montoRechazado:
+        type: string
+        description: Sumatoria de los montos de las transacciones rechazadas exitosamente.
+      fecha:
+        type: string
+        description: Fecha de la transaccion.
+      hora:
+        type: string
+        description: Hora de la transaccion.
+      mensaje:
+        type: string
+        description: Mensaje de la respuesta del servicio.
+  Rechazo:
+    title: Rechazo
+    description: Objeto que permite realizar el rechazo de las transacciones en transfiya.
+    properties:
+      numeroTelefono:
+        type: string
+        description: numero de telefono del cliente.
+      transacciones:
+        type: array
+        items:
+          type: string
+  AcceptRequest:
+    title: Acceptar solicitud dinero
+    description: Objeto que permite realizar operaciones de aceptar recibir dinero por medio de transfiya.
+    properties:
+      tokenCuenta:
+        type: string
+        description: Numero de cuenta tokenisado del cliente para aceptar la operacion.
+      numeroTelefono:
+        type: string
+        description: numero de telefono del cliente.
+      dispositivo:
+        $ref: '#/definitions/Dispositivo'
+      transactionsRequest:
+        type: array
+        items:
+          $ref: '#/definitions/AcceptRequestTransactions'
+  AcceptRequestTransactions:
+    title: Acceptar solicitud dinero transaccion
+    description: Objeto que permite recibir una o varias referencias de aceptar recibir dinero por medio de transfiya.
+    properties:
+      referenciaTransaccion:
+        type: string
+        description: Numero de referencia de la transaccion entregado por la lista de transacciones pendientes por recibir.
+  AcceptReceiver:
+    title: Acceptar recepcion dinero
+    description: Objeto que permite realizar operaciones de aceptar recibir dinero por medio de transfiya.
+    properties:
+      tokenCuenta:
+        type: string
+        description: Numero de cuenta tokenisado del cliente para aceptar la operacion.
+      dispositivo:
+        $ref: '#/definitions/Dispositivo'
+      numeroTelefono:
+        type: string
+        description: numero de telefono del cliente.
+      transactionsReceiver:
+        type: array
+        items:
+          $ref: '#/definitions/AcceptReceiverTransactions'
+  AcceptReceiverTransactions:
+    title: Acceptar recepcion dinero transaccion
+    description: Objeto que permite recibir una o varias referencias de aceptar recibir dinero por medio de transfiya.
+    properties:
+      referenciaTransaccion:
+        type: string
+        description: Numero de referencia de la transaccion entregado por la lista de transacciones pendientes por recibir.
+  MovimientoTransfiya:
+    title: Movimiento
+    description: lorem
+    properties:
+      nroTransaccion:
+        type: number
+        description: Numero de la transaccion.
+      monto:
+        type: string
+        description: Monto de la transaccion.
+      celular:
+        type: string
+        description: numero telefonico de orige o destino segun corresponda.
+      estado:
+        type: string
+        description: numero telefonico de orige o destino segun corresponda.
+      fechaTransaccion:
+        type: string
+        pattern: dd/MM/aaaa
+        description: Fecha de la operación.
+      horaTransaccion:
+        type: string
+        pattern: HH:mm:ss
+        description: Hora de la operación.
+  Debito:
+    title: Debito
+    description: Objeto que permite realizar operaciones de debito por medio de transfiya.
+    properties:
+      monto:
+        type: string
+        description: Monto inicial a enviar.
+      contacto:
+        type: string
+        description: Nombres de contacto como aparece la persona destino en la libreta de contactos del dispositivo movil.
+      celularOrigen:
+        type: string
+        description: numero telefonico desde el que se envia el monto (origen).
+      celularDestino:
+        type: string
+        description: numero telefonico al cual se envia el monto (destino).
+      cuenta:
+        type: string
+        description: Numero virtual ed la cuenta del cliente
+      descripcion:
+        type: string
+        description: Descripción de la transacción
+      dispositivo:
+        $ref: '#/definitions/Dispositivo'
+    required:
+      - monto
+      - celular
+      - cuenta
+  Dispositivo:
+    title: Dispositivo
+    properties:
+      geolocation:
+        $ref: '#/definitions/Geolocation'
+      hash:
+        $ref: '#/definitions/Hash'
+      general:
+        $ref: '#/definitions/General'
+  Geolocation:
+    title: Geolocation
+    description: Datos de la geolocalización del dispositivo
+    properties:
+      city:
+        type: string
+        description: Ciudad de ubicacion del dispositivo
+      country:
+        type: string
+        description: Pais de ubicación del dispositivo
+      ip:
+        type: string
+        description: ip del dispositivo
+      isp:
+        type: string
+        description: tipo de dispositivo
+  Hash:
+    title: Hash
+    description: Referencia del hash
+    properties:
+      id:
+        type: string
+        description: Dato de referencia del hash
+  General:
+    title: General
+    description: Datos faltantes del dispositivo
+    properties:
+      deviceId:
+        type: string
+        description: Datos del dispositivo
+      hostname:
+        type: string
+        description: Nombre del host
+      macAddress:
+        type: string
+        description: Mascara del dispositivo
+      passiveId:
+        type: string
+        description: Id de identificacion en pasivo
+  NotificacionOtp:
+    title: NotificacionOtp
+    type: object
+    properties:
+      id:
+        type: string
+        description: Identificador de la push
+      fecha:
+        type: string
+        description: Fecha en que ha sido generada la OTP
+      hora:
+        type: string
+        description: Hora en que ha sido generada la OTP
+  OperacionDebito:
+    title: OperacionDebito
+    properties:
+      codAutorizacion:
+        type: string
+        description: Código de autorización
+      cus:
+        type: string
+        description: Numero de identificacion de la tranasaccion
+      contacto:
+        type: string
+        description: Nombres de contacto como aparece la persona destino en la libreta de contactos del dispositivo movil.
+      celularContacto:
+        type: string
+        description: Número de celular al cual se realiza la transacción.
+      banco:
+        type: string
+        description: Banco al cual se le acredita el dinero.
+      fechaTransaccion:
+        type: string
+        pattern: dd/MM/aaaa
+        description: Fecha de la operación.
+      horaTransaccion:
+        type: string
+        pattern: HH:mm:ss
+        description: Hora de la operación.
+      numTx:
+        type: string
+        description: id movimiento.
+    required:
+      - codAutorizacion
+      - celularContacto
+      - fechaTransaccion
+      - horaTransaccion
+  ConfirmacionDebito:
+    title: ConfirmacionDebito
+    description: Informacion necesaria para realizar la operacion de debito a traves de transfiya.
+    properties:
+      debito:
+        $ref: '#/definitions/Debito'
+      otp:
+        $ref: '#/definitions/Otp'
+    required:
+      - debito
+      - otp
+  ConfirmacionSolicitud:
+    title: ConfirmacionSolcitud
+    description: Informacion necesaria para realizar la operacion de debito a traves solicitud de transfiya.
+    properties:
+      debito:
+        $ref: '#/definitions/AcceptRequest'
+      otp:
+        $ref: '#/definitions/Otp'
+    required:
+      - debito
+      - otp
+  Otp:
+    title: Otp
+    description: Objeto que permite enviar cuando se requiere OTP
+    properties:
+      otp:
+        type: string
+        description: Otp para la operacion de debito en transfiya
+      numTx:
+        type: string
+        description: Numero de transaccion generado para la operacion de debito en transfiya.
+    required:
+      - otp
+      - numTx
+  Comprobante:
+    title: Comprobante
+    description: Informacion para la generacion del comprobante para el ususario en el momento de finalizar un envio de dinero
+    properties:
+      numAutorizacion:
+        type: number
+        description: Numero de identificacion de la autorizacion del movimiento de dinero
+      valorEnviado:
+        type: string
+        description: Monto de dinero el cual fue enviado en la transaccion.
+      numeroCelular:
+        type: string
+        description: Numero de celular al que se le realiza el envio
+      contacto:
+        type: string
+        description: Nombre y apellido de la persona regitrado en el celular a la cual se le hace el envio
+      fechaTransaccion:
+        type: string
+        pattern: dd/MM/aaaa
+        description: Fecha de la operación.
+      horaTransaccion:
+        type: string
+        pattern: HH:mm:ss
+        description: Hora de la operación.
+    required:
+      - numAutorizacion
+      - valorEnviado
+      - numeroCelular
+      - fechaTransaccion
+      - horaTransaccion
+  DatosComprobante:
+    title: DatosComprobante
+    type: object
+    properties:
+      payload:
+        type: string
+        description: Cadena encriptada del payload
+  Error:
+    title: Error
+    type: object
+    properties:
+      code:
+        type: integer
+        description: Código que identifica el error correspondiente a la petición.
+      message:
+        type: string
+        description: Describe la causa del error.
+  RegisterKey:
+    title: RegisterKey
+    description: Datos de personales del usuario para realizar el registro y posterior el uso de la aplicación Breve.
+    properties:
+      type:
+        type: string
+        description: Se relaciona al tipo de llave al cual se va a crear (Alfanumerico, Num Celular, Email, Document, MerchentID).
+      key:
+        type: string
+        description: Valor de la llave a crear.
+      bankAccountType:
+        type: string
+        description: Tipo de cuenta bancaria del usuario.
+      bankAccountNumber:
+        type: string
+        description: Numero de cuenta bancaria del usuario.
+      names:
+        type: string
+        description: Primer y segundo nombre del cliente.
+      lastNames:
+        type: string
+        description: Primer y segundo apellido del cliente.
+      mobile:
+        type: string
+        description: Numero de celular del usuario (Debe iniciar por 573, debe contener 12 caracteres)
+        pattern: '^\d{12}$'
+      email:
+        type: string
+        description: Correo electronico del cliente.
+      description:
+        type: string
+        description: descripcion para el uso de los datos..
+      personType:
+        type: string
+        description: Se relaciona a el tipo de llave person o business.
+      device:
+        $ref: '#/definitions/Dispositivo'
+    required:
+      - type
+      - key
+      - bankAccountType
+      - bankAccountNumber
+      - device
+  GenerateOtpSpi:
+    title: GenerateOtpSpi
+    description: Informacion para generar la otp para registrar una llave.
+    properties:
+      key:
+        type: string
+        description: Llave alfanumerica a la que se le genera la otp.
+      type:
+        type: string
+        description: Tipo de llave que se va a registrar.
+      account:
+        type: string
+        description: Numero de cuenta a la que se le va asociar la llave.
+      device:
+        $ref: '#/definitions/Dispositivo'
+    required:
+      - key
+      - type
+      - account
+      - device
+  ResponseOtp:
+    title: ResponseOtp
+    type: object
+    properties:
+      id:
+        type: string
+        description: Identificador de la push
+      date:
+        type: string
+        description: Fecha en que ha sido generada la OTP
+      hour:
+        type: string
+        description: Hora en que ha sido generada la OTP
+  QueryKeyResponse:
+    title: QueryKeyResponse
+    description: Respuesta para consulta de llaves.
+    properties:
+      bankAccountNumber:
+        type: string
+        description: Numero de cuenta bancaria asociada a una llave.
+      key:
+        type: string
+        description: Se relaciona a el valor llave.
+      typeKey:
+        type: string
+        description: Se relaciona a el tipo de la llave.
+      statusKey:
+        type: string
+        description: estado de la llave.
+      personType:
+        type: string
+        description: Se relaciona a el tipo de llave person o business.
+      nodo:
+        type: string
+        description: Se relaciona a el nodo en el cual esta registrada la llave piede ser RBM o TFY.
+  ManageKey:
+    title: ManageKey
+    description: Datos de personales del usuario para realizar el registro y posterior el uso de la aplicación Breve.
+    properties:
+      type:
+        type: string
+        description: Se relaciona al tipo de llave al cual se va a crear (Alfanumerico, Num Celular, Email, Document, MerchentID).
+      key:
+        type: string
+        description: Valor de la llave a crear.
+      bankAccountType:
+        type: string
+        description: Tipo de cuenta bancaria del usuario.
+      bankAccountNumber:
+        type: string
+        description: Numero de cuenta bancaria del usuario.
+      typeSecondKey:
+        type: string
+        description: Se relaciona al tipo de llave al cual se va a crear (Alfanumerico, Num Celular, Email, Document, MerchentID).
+      secondKey:
+        type: string
+        description: Valor de la llave a crear.
+      device:
+        $ref: '#/definitions/Dispositivo'
+    required:
+      - type
+      - key
+      - bankAccountType
+      - bankAccountNumber
+  InactiveKey:
+    title: InactiveKey
+    description: Datos de personales del usuario para realizar la cancelación de la llave en Breve.
+    properties:
+      type:
+        type: string
+        description: Se relaciona al tipo de llave al cual se va a cancelar (Alfanumerico, Num Celular, Email, Document, MerchentID).
+      key:
+        type: string
+        description: Valor de la llave a cancelar.
+      bankAccountType:
+        type: string
+        description: Tipo de cuenta bancaria del usuario.
+      bankAccountNumber:
+        type: string
+        description: Numero de cuenta bancaria del usuario.
+      device:
+        $ref: '#/definitions/Dispositivo'
+    required:
+      - type
+      - key
+  TerminosCondiciones:
+      title: terminosCondiciones
+      description: Parametros acordes para la aprobacion de terminos y condiciones
+      properties:
+        isCheck:
+          type: boolean
+          description: Estado de la aprobacion de los terminos y condiciones
+        terminos:
+          type: array
+          items:
+            type: object
+            title: terminos
+            description: Terminos principales de aprobacion
+            properties:
+              id:
+                type: string
+              estado:
+                type: boolean
+              texto:
+                type: string
+  TerminosRequest:
+    title: terminosCondiciones
+    description: Parametros acordes para la aprobacion de terminos y condiciones
+    properties:
+      tipoDocumento:
+        type: string
+        description: Tipo de documento de cliente
+      numeroDocumento:
+        type: string
+        description: Numero de dopcumento
+      version:
+        type: string
+        description: Tipo de documento de cliente
+      terminos:
+        type: array
+        items:
+          type: object
+          title: terminos
+          description: Terminos principales de aprobacion
+          properties:
+            id:
+              type: string
+            estado:
+              type: boolean
+  ResponseTerminos:
+    title: responseTerminos
+    description: Respuesta cuando los terminos esten confirmados
+    properties:
+      codigo:
+        type: number
+        description: Codigo de respuesta de los terminos
+      mensaje:
+        type: string
+        description: Mensaje de respuesta
+  ResolveKey:
+    title: ResolveKey
+    description: Datos de personales del usuario para realizar la cancelación de la llave en Breve.
+    properties:
+      key:
+        type: string
+        description: Valor de la llave a cancelar.
+    required:
+      - type
+      - key
+  ResponseResolveKey:
+    title: ResponseResolveKey
+    description: Datos de personales del usuario de la llave resuelta para el uso de la aplicación Bre-B.
+    properties:
+      type:
+        type: string
+        description: Se relaciona al tipo de llave al cual se va a crear (Alfanumerico, Num Celular, Email, Document, MerchentID).
+      key:
+        type: string
+        description: Valor de la llave a crear.
+      typeIdentification:
+        type: string
+        description: Tipo de identificación del usuario a la que se ha de crear.
+      identification:
+        type: string
+        description: Numero de documento del usuario.
+      bankAccountType:
+        type: string
+        description: Tipo de cuenta bancaria del usuario.
+      bankAccountNumber:
+        type: string
+        description: Numero de cuenta bancaria del usuario.
+      names:
+        type: string
+        description: Primer y segundo nombre del cliente.
+      lastNames:
+        type: string
+        description: Primer y segundo apellido del cliente.
+      typeClient:
+        type: string
+        description: tipo de cliente entre natural o juridico
+      status:
+        type: string
+        description: estado actual de la llave.
+      handle:
+        type: string
+        description: Otp consumo creación llaves
+  DebitSpi:
+    title: DebitoSpi
+    description: Objeto que permite realizar operaciones de debito por medio de transfiya.
+    properties:
+      numDocumento:
+        type: string
+        description: Monto inicial a enviar.
+      tipoDocumento:
+        type: string
+        description: Monto inicial a enviar.
+      monto:
+        type: string
+        description: Monto inicial a enviar.
+      contacto:
+        type: string
+        description: Nombres de contacto como aparece la persona destino en la libreta de contactos del dispositivo movil.
+      llaveDestino:
+        type: string
+        description: numero telefonico al cual se envia el monto (destino).
+      cuenta:
+        type: string
+        description: Numero virtual de la cuenta del cliente
+      idQr:
+        type: string
+        description: identifica que la transaccion es con qr (se deve poner null si no lo es)
+      descripcion:
+        type: string
+        description: Descripción de la transacción
+      dispositivo:
+        $ref: '#/definitions/Dispositivo'
+    required:
+      - monto
+      - llaveDestino
+      - cuenta
+    Dispositivo:
+      title: Dispositivo
+      properties:
+        geolocation:
+          $ref: '#/definitions/Geolocation'
+        hash:
+          $ref: '#/definitions/Hash'
+        general:
+          $ref: '#/definitions/General'
+    Geolocation:
+      title: Geolocation
+      description: Datos de la geolocalización del dispositivo
+      properties:
+        city:
+          type: string
+          description: Ciudad de ubicacion del dispositivo
+        country:
+          type: string
+          description: Pais de ubicación del dispositivo
+        ip:
+          type: string
+          description: ip del dispositivo
+        isp:
+          type: string
+          description: tipo de dispositivo
+    Hash:
+      title: Hash
+      description: Referencia del hash
+      properties:
+        id:
+          type: string
+          description: Dato de referencia del hash
+    General:
+      title: General
+      description: Datos faltantes del dispositivo
+      properties:
+        deviceId:
+          type: string
+          description: Datos del dispositivo
+        hostname:
+          type: string
+          description: Nombre del host
+        macAddress:
+          type: string
+          description: Mascara del dispositivo
+        passiveId:
+          type: string
+          description: Id de identificacion en pasivo
+  ConfirmationDebitSpi:
+    title: ConfirmationDebitSpi
+    description: Informacion necesaria para realizar la operacion de debito a traves de transfiya.
+    properties:
+      debito:
+        $ref: '#/definitions/DebitSpi'
+      otp:
+        $ref: '#/definitions/Otp'
+    required:
+      - debito
+      - otp
+  DebitSpiOtp:
+    title: DebitoSpiOtp
+    description: Objeto que permite realizar el envio de mensajes OTP para debito SPI.
+    properties:
+      monto:
+        type: string
+        description: Monto inicial a enviar.
+      llaveDestino:
+        type: string
+        description: numero telefonico al cual se envia el monto (destino).
+      cuenta:
+        type: string
+        description: Numero virtual de la cuenta del cliente
+  ChangeStatusKey:
+    title: ChangeStatusKey
+    description: Datos de personales del usuario para realizar el bloqueo o activación de la llave en Breve.
+    properties:
+      type:
+        type: string
+        description: Se relaciona al tipo de llave al cual se va a cancelar (Alfanumerico, Num Celular, Email, Document, MerchentID).
+      key:
+        type: string
+        description: Valor de la llave a cancelar.
+      statusToChange:
+        type: string
+        description: tipo de cambio que se ha de ejecutar para la llave.
+      isParticipant:
+        type: string
+        description: Es participante.
+      bankAccountType:
+        type: string
+        description: Tipo de cuenta bancaria del usuario.
+      bankAccountNumber:
+        type: string
+        description: Numero de cuenta bancaria del usuario.
+      device:
+        $ref: '#/definitions/Dispositivo'
+    required:
+      - type
+      - key
+      - statusToChange
+      - isParticipant
+  ValidateStatusKeyResponse:
+    title: ValidateStatusKeyResponse
+    description: Respuesta para consulta de llaves.
+    properties:
+      key:
+        type: string
+        description: Se relaciona a el valor llave.
+      typeKey:
+        type: string
+        description: Se relaciona a el tipo de la llave.
+      statusKey:
+        type: string
+        description: estado de la llave.
+      haveExtension:
+        type: boolean
+        description: estado de la llave.
+      statusExtension:
+        type: string
+        description: estado de la llave.
+  ExtensionSpi:
+    title: ExtensionSpi
+    description: Respuesta para consulta de llaves.
+    properties:
+      listKeysInactive:
+        type: array
+        items:
+          $ref: '#/definitions/ValidateStatusKeyResponse'
+        description: lista de llaves para inactivar.
+      listKeysExtension:
+        type: array
+        items:
+          $ref: '#/definitions/ValidateStatusKeyResponse'
+        description: lista de llaves para ejecutar prorroga
+  TransactionSpiDTO:
+    type: object
+    properties:
+      idTransaction:
+        type: string
+        description: Identificador de la transacción
+      key:
+        type: string
+        description: Número de celular del usuario
+      cus:
+        type: string
+        description: CUS asociado a la transacción
+      operationType:
+        type: string
+        description: Tipo de operación
+      status:
+        type: string
+        description: Estado de la transacción
+  QrRequest:
+    title: QrRequest
+    description: Payload para recibir el hash del qr y poderlo resolver.
+    properties:
+      qrCode:
+        type: string
+        description: Hash qr.
+  QrResponse:
+    title: QrResponse
+    type: object
+    properties:
+      requestId:
+        type: string
+        description: Identificador de la resolucion del qr
+      timestamp:
+        type: string
+        description: Fecha en que ha sido resuelto el qr
+      status:
+        type: string
+        description: Estado de la operacion de resolucion
+      statusCode:
+        type: string
+        description: Codigo de la operacion de resolucion
+      key:
+        type: string
+        description: Llave del qr
+      amount:
+        type: string
+        description: Monto del qr
+      idQr:
+        type: string
+        description: identificador qr
+  NewQrAchRequestDTO:
+    type: object
+    properties:
+      amount:
+        type: string
+      aliasValue:
+        type: string
+      qrType:
+        type: string
+      description:
+        type: string
+      device:
+        $ref: '#/definitions/Dispositivo'
+  QRCodeResponse:
+    type: object
+    properties:
+      id:
+        type: string
+        description: llave unica del qr formato uuid
+      type:
+        type: string
+        description: Tipo de código QR, puede ser estático o dinámico
+      status:
+        type: string
+        description: Estado del código QR, puede ser activo, inactivo o expirado
+      key:
+        type: object
+        description: Llave asociada al código QR, si aplica
+        $ref: '#/definitions/QueryKeyResponse'
+      image:
+        type: string
+        description: imagen del código QR en formato Base64
+      amount:
+        type: string
+        description: Monto asociado al código QR, si aplica
+      duration:
+        type: string
+        description: numero de segundos duración qr dinamico
+      creationDate:
+        type: string
+        description: Fecha de creación del código QR en formato ISO 8601
+      expirationDate:
+        type: string
+        description: Fecha de expiración del código QR en formato ISO 8601
+      description:
+        type: string
+        description: texto opcional que el cual describe el uso del qr dinámico
+  UpdateQrAchRequestDTO:
+    type: object
+    properties:
+      newStatus:
+        type: string
+      aliasValue:
+        type: string
+      qrId:
+        type: string
+      qrType:
+        type: string
+      device:
+        $ref: '#/definitions/Dispositivo'

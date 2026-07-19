@@ -20,7 +20,7 @@ export function ToolPageContent({ slug }: { slug: string }) {
 
   return (
     <section className="border-t border-border bg-background">
-      <div className="mx-auto w-full max-w-4xl px-6 py-14 md:px-10 md:py-20">
+      <div className="mx-auto w-full max-w-6xl px-6 py-10 md:px-10">
         <Breadcrumb name={tool.name} />
 
         <h1 className="mt-6 text-3xl md:text-4xl font-semibold tracking-tight text-foreground text-balance">

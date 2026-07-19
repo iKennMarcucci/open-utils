@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  UploadCloud,
   FileText,
   Pencil,
   RotateCw,
@@ -19,6 +18,10 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ExampleButton } from "@/components/ExampleButton";
+import { ToolLayout } from "@/components/ToolLayout";
+import { FileDropzone } from "@/components/FileDropzone";
+import { samplePdfFile } from "@/lib/samples";
 import {
   AnnotationCanvas,
   type AnnotationCanvasHandle,
@@ -109,7 +112,6 @@ export function PdfEditorUi() {
   const [zoom, setZoom] = useState(1);
   const [containerW, setContainerW] = useState(800);
   const [isLoading, setIsLoading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<EditorError | null>(null);
   const [selection, setSelection] = useState<Annotation | null>(null);
@@ -192,13 +194,6 @@ export function PdfEditorUi() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const f = e.dataTransfer.files?.[0];
-    if (f) handleFile(f);
   };
 
   const resetAll = () => {
@@ -369,17 +364,8 @@ export function PdfEditorUi() {
   // ---------------------------------------------------------------------
   if (!pdf) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 sm:p-10">
-        <div className="w-full max-w-3xl">
-          <motion.div
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-center gap-4 mb-10"
-          >
-            <Pencil className="w-7 h-7 text-foreground-muted" />
-            <h2 className="text-4xl font-semibold tracking-tight text-foreground">Editor de PDF</h2>
-          </motion.div>
-
+      <ToolLayout slug="editor-pdf">
+        <div className="w-full">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center min-h-[420px]">
               <div className="w-12 h-12 border-[3px] border-surface-strong border-t-accent rounded-full animate-spin" />
@@ -387,39 +373,24 @@ export function PdfEditorUi() {
             </div>
           ) : (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-              <div
-                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={onDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={cn(
-                  "group relative flex flex-col items-center justify-center gap-5 border-2 border-dashed rounded-panel transition-all min-h-[420px] p-8 text-center cursor-pointer",
-                  isDragging ? "border-white bg-surface" : "border-border bg-surface/50 hover:border-border-strong hover:bg-surface"
-                )}
-              >
-                <div className="w-16 h-16 rounded-full bg-surface-strong flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <UploadCloud className="w-8 h-8 text-foreground-muted" />
-                </div>
-                <div>
-                  <p className="text-lg font-medium text-foreground">Suelta tu PDF aquí</p>
-                  <p className="text-sm text-foreground-subtle mt-1">o haz clic para seleccionarlo</p>
-                </div>
-                <div className="text-xs text-foreground-faint flex items-center gap-2">
-                  <FileText className="w-4 h-4" /> Dibuja, resalta, escribe, agrega formas e imágenes · máx. 100MB
-                </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept="application/pdf"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
-                  className="hidden"
-                />
-              </div>
+              <FileDropzone
+                onFiles={(files) => handleFile(files[0])}
+                accept="application/pdf"
+                title="Suelta tu PDF aquí"
+                hint={
+                  <>
+                    <FileText className="w-4 h-4" /> Dibuja, resalta, escribe, agrega formas e imágenes · máx. 100MB
+                  </>
+                }
+                example={
+                  <ExampleButton onClick={() => samplePdfFile(3, "ejemplo.pdf").then(handleFile)} />
+                }
+              />
             </motion.div>
           )}
         </div>
         <ErrorModal error={error} onClose={() => setError(null)} />
-      </div>
+      </ToolLayout>
     );
   }
 
@@ -524,7 +495,7 @@ export function PdfEditorUi() {
           </div>
 
           {/* Scrollable canvas */}
-          <div ref={scrollRef} className="flex-1 overflow-auto custom-scrollbar bg-[#0b0b0b] p-6 flex items-start justify-center">
+          <div ref={scrollRef} className="flex-1 overflow-auto custom-scrollbar bg-surface-strong p-6 flex items-start justify-center">
             {current && currentView ? (
               <div className="relative">
                 {rotating && (

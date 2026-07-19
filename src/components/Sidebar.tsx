@@ -1,151 +1,91 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Menu,
   X,
-  FileText,
-  Image as ImageIcon,
-  ImagePlay,
-  RefreshCw,
   PanelLeftClose,
   PanelLeftOpen,
   LayoutGrid,
-  Video,
-  Layers,
-  Scissors,
   ShieldCheck,
-  Pencil,
-  Brush,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
 import { GithubIcon } from "@/components/GithubIcon";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { REPO_URL } from "@/lib/seo/site";
+import { ALL_CATEGORIES } from "@/lib/seo/categories";
+import { toolsInCategory, type CategoryId } from "@/lib/seo/tools";
+import { CATEGORY_VISUALS, TOOL_ICONS, TOOL_FALLBACK_ICON } from "@/lib/catalog";
 
 const RAIL_WIDTH = 72;
+const PANEL_WIDTH = 272;
+
+// The flyout is measured and repositioned before paint to keep it inside the
+// viewport; useLayoutEffect on the client, useEffect on the server (no warning).
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // Independent toggle state just for the sidebar visual title
-  const [pdfToolMode, setPdfToolMode] = useState<"pdf-to-img" | "img-to-pdf">("pdf-to-img");
-  const [videoToolMode, setVideoToolMode] = useState<"video-to-gif" | "gif-to-video">("video-to-gif");
-  const [pdfOrgMode, setPdfOrgMode] = useState<"merge" | "split">("merge");
-  const [editorMode, setEditorMode] = useState<"pdf" | "img">("pdf");
-
-  // Tooltip shown when the rail is collapsed. Rendered as a fixed sibling so it
-  // escapes the sidebar's `overflow-hidden`. We store only the id + vertical
-  // anchor; the item (and its live name) is looked up at render time.
-  const [tip, setTip] = useState<{ id: string; top: number } | null>(null);
-  const tipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Hover flyout. A category row opens a floating panel listing its tools. It is
+  // a fixed sibling of the <aside> so it escapes the sidebar's overflow-hidden,
+  // and we store only the category id + vertical anchor; the tools are looked up
+  // at render time. A short close timer lets the pointer travel into the panel.
+  const [flyout, setFlyout] = useState<{ id: string; top: number } | null>(null);
+  const flyoutTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Resolved top-left corner after clamping the panel inside the viewport.
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [panelTop, setPanelTop] = useState<number | null>(null);
 
   const pathname = usePathname();
+  const sidebarWidth = isCollapsed ? RAIL_WIDTH : PANEL_WIDTH;
 
-  const clearTipTimer = () => {
-    if (tipTimer.current) {
-      clearTimeout(tipTimer.current);
-      tipTimer.current = null;
+  const clearFlyoutTimer = () => {
+    if (flyoutTimer.current) {
+      clearTimeout(flyoutTimer.current);
+      flyoutTimer.current = null;
     }
   };
-  const openTip = (id: string, el: HTMLElement) => {
-    clearTipTimer();
+  const openFlyout = (id: string, el: HTMLElement) => {
+    clearFlyoutTimer();
     const rect = el.getBoundingClientRect();
-    setTip({ id, top: rect.top + rect.height / 2 });
+    setFlyout({ id, top: rect.top + rect.height / 2 });
   };
-  const scheduleCloseTip = () => {
-    clearTipTimer();
-    tipTimer.current = setTimeout(() => setTip(null), 120);
+  const scheduleCloseFlyout = () => {
+    clearFlyoutTimer();
+    flyoutTimer.current = setTimeout(() => setFlyout(null), 140);
   };
-
-  const handleTogglePdfMode = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setPdfToolMode((prev) => (prev === "pdf-to-img" ? "img-to-pdf" : "pdf-to-img"));
-  };
-
-  const handleToggleVideoMode = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setVideoToolMode((prev) => (prev === "video-to-gif" ? "gif-to-video" : "video-to-gif"));
-  };
-
-  const handleTogglePdfOrgMode = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setPdfOrgMode((prev) => (prev === "merge" ? "split" : "merge"));
-  };
-
-  const handleToggleEditorMode = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setEditorMode((prev) => (prev === "pdf" ? "img" : "pdf"));
-  };
-
-  const navItems = [
-    {
-      id: "dashboard",
-      name: "Inicio",
-      icon: LayoutGrid,
-      href: "/",
-      matchPath: "/",
-      hasToggle: false,
-    },
-    {
-      id: "editor",
-      name: editorMode === "pdf" ? "Editor PDF" : "Editor IMG",
-      icon: editorMode === "pdf" ? Pencil : Brush,
-      href: editorMode === "pdf" ? "/editor-pdf" : "/editor-imagen",
-      matchPath: editorMode === "pdf" ? "/editor-pdf" : "/editor-imagen",
-      hasToggle: true,
-      onToggle: handleToggleEditorMode,
-      isFlipped: editorMode === "img",
-    },
-    {
-      id: "pdf-converter",
-      name: pdfToolMode === "pdf-to-img" ? "PDF a imagen" : "Imagen a PDF",
-      // Icon reflects the conversion target: image for PDF→IMG, PDF for IMG→PDF.
-      icon: pdfToolMode === "pdf-to-img" ? ImageIcon : FileText,
-      href: pdfToolMode === "pdf-to-img" ? "/pdf-a-imagen" : "/imagen-a-pdf",
-      matchPath: pdfToolMode === "pdf-to-img" ? "/pdf-a-imagen" : "/imagen-a-pdf",
-      hasToggle: true,
-      onToggle: handleTogglePdfMode,
-      isFlipped: pdfToolMode === "img-to-pdf",
-    },
-    {
-      id: "video-converter",
-      name: videoToolMode === "video-to-gif" ? "Video a GIF" : "GIF a video",
-      // Icon reflects the target: GIF for Video→GIF, video for GIF→Video.
-      icon: videoToolMode === "video-to-gif" ? ImagePlay : Video,
-      href: videoToolMode === "video-to-gif" ? "/video-a-gif" : "/gif-a-video",
-      matchPath: videoToolMode === "video-to-gif" ? "/video-a-gif" : "/gif-a-video",
-      hasToggle: true,
-      onToggle: handleToggleVideoMode,
-      isFlipped: videoToolMode === "gif-to-video",
-    },
-    {
-      id: "pdf-organizer",
-      name: pdfOrgMode === "merge" ? "Unir PDF" : "Dividir PDF",
-      icon: pdfOrgMode === "merge" ? Layers : Scissors,
-      href: pdfOrgMode === "merge" ? "/unir-pdf" : "/dividir-pdf",
-      matchPath: pdfOrgMode === "merge" ? "/unir-pdf" : "/dividir-pdf",
-      hasToggle: true,
-      onToggle: handleTogglePdfOrgMode,
-      isFlipped: pdfOrgMode === "split",
-    },
-  ];
-
-  const tipItem = tip ? navItems.find((i) => i.id === tip.id) : null;
 
   const closeOnMobile = () => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
       setIsMobileOpen(false);
     }
   };
+
+  // A category row is active when its own page or any of its tools is open.
+  const isCategoryActive = (id: CategoryId) =>
+    pathname === `/${id}` || toolsInCategory(id).some((t) => pathname === `/${t.slug}`);
+
+  const flyoutCategory = flyout ? ALL_CATEGORIES.find((c) => c.id === flyout.id) : null;
+
+  // Center the panel on the hovered row, then clamp so it never spills past the
+  // top or bottom of the viewport (tall categories near the top were clipped).
+  useIsoLayoutEffect(() => {
+    if (!flyout || !panelRef.current) {
+      setPanelTop(null);
+      return;
+    }
+    const margin = 12;
+    const h = panelRef.current.offsetHeight;
+    const max = Math.max(margin, window.innerHeight - h - margin);
+    setPanelTop(Math.min(Math.max(flyout.top - h / 2, margin), max));
+  }, [flyout]);
 
   return (
     <>
@@ -172,7 +112,7 @@ export function Sidebar() {
 
       <motion.aside
         initial={false}
-        animate={{ width: isCollapsed ? RAIL_WIDTH : 272 }}
+        animate={{ width: sidebarWidth }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
           "fixed lg:static inset-y-0 left-0 z-50 flex flex-col h-full overflow-hidden bg-background-elevated border-r border-border shadow-lg lg:shadow-none transition-transform duration-300 ease-out",
@@ -224,68 +164,72 @@ export function Sidebar() {
 
         {/* Nav */}
         <nav className="p-3 flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar space-y-1">
+          {/* Inicio */}
+          <Link
+            href="/"
+            onClick={closeOnMobile}
+            onMouseEnter={() => scheduleCloseFlyout()}
+            className={cn(
+              "group relative flex items-center h-10 rounded-control transition-colors duration-200",
+              isCollapsed ? "justify-center px-0" : "px-3 gap-3",
+              pathname === "/"
+                ? "bg-surface-hover text-foreground"
+                : "text-foreground-muted hover:bg-surface hover:text-foreground"
+            )}
+          >
+            <LayoutGrid className="w-[18px] h-[18px] shrink-0" />
+            {!isCollapsed && <span className="whitespace-nowrap font-medium text-sm">Inicio</span>}
+          </Link>
+
           <p
             className={cn(
-              "ou-label px-3 pt-2 pb-1.5 whitespace-nowrap transition-opacity duration-150",
+              "ou-label px-3 pt-3 pb-1.5 whitespace-nowrap transition-opacity duration-150",
               isCollapsed && "opacity-0 pointer-events-none h-0 p-0 overflow-hidden"
             )}
           >
-            Herramientas
+            Categorías
           </p>
-          {navItems.map((item) => {
-            const isActive = pathname === item.matchPath;
+
+          {ALL_CATEGORIES.map((category) => {
+            const { icon: Icon, accent } = CATEGORY_VISUALS[category.id];
+            const active = isCategoryActive(category.id);
             return (
               <Link
-                href={item.href}
-                key={item.id}
+                href={`/${category.id}`}
+                key={category.id}
                 onClick={closeOnMobile}
-                onMouseEnter={(e) => isCollapsed && openTip(item.id, e.currentTarget)}
-                onMouseLeave={() => isCollapsed && scheduleCloseTip()}
+                onMouseEnter={(e) => openFlyout(category.id, e.currentTarget)}
+                onMouseLeave={scheduleCloseFlyout}
                 className={cn(
-                  "group relative flex items-center h-10 rounded-control transition-colors duration-200",
-                  isCollapsed ? "justify-center px-0" : "justify-between px-3",
-                  isActive
+                  "group relative flex items-center h-11 rounded-control transition-colors duration-200",
+                  isCollapsed ? "justify-center px-0" : "px-3 gap-3",
+                  active
                     ? "bg-surface-hover text-foreground"
                     : "text-foreground-muted hover:bg-surface hover:text-foreground"
                 )}
               >
-                {/* Active accent bar — only meaningful when expanded */}
-                {isActive && !isCollapsed && (
+                {active && !isCollapsed && (
                   <motion.span
                     layoutId="sidebar-active"
                     className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-accent"
                   />
                 )}
-
-                <div className={cn("flex items-center min-w-0", !isCollapsed && "gap-3")}>
-                  <item.icon
-                    className={cn(
-                      "w-[18px] h-[18px] shrink-0 transition-colors",
-                      isActive
-                        ? "text-foreground"
-                        : "text-foreground-faint group-hover:text-foreground-muted"
-                    )}
-                  />
-                  {!isCollapsed && (
-                    <span className="whitespace-nowrap font-medium text-sm truncate">
-                      {item.name}
+                <Icon
+                  className="w-[18px] h-[18px] shrink-0 transition-colors"
+                  style={{ color: active ? accent : undefined }}
+                />
+                {!isCollapsed && (
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate whitespace-nowrap font-medium text-sm leading-tight">
+                      {category.label}
                     </span>
-                  )}
-                </div>
-
-                {!isCollapsed && item.hasToggle && (
-                  <button
-                    onClick={item.onToggle}
-                    className="p-1.5 rounded-md text-foreground-faint hover:text-foreground hover:bg-surface-strong transition-colors shrink-0"
-                    title="Cambiar conversor"
-                  >
-                    <RefreshCw
-                      className={cn(
-                        "w-3.5 h-3.5 transition-transform duration-500",
-                        item.isFlipped && "rotate-180"
-                      )}
-                    />
-                  </button>
+                    <span className="block truncate text-[11px] leading-tight text-foreground-faint">
+                      {toolsInCategory(category.id).length} herramientas
+                    </span>
+                  </span>
+                )}
+                {!isCollapsed && (
+                  <ChevronRight className="w-4 h-4 shrink-0 text-foreground-faint transition-transform group-hover:translate-x-0.5" />
                 )}
               </Link>
             );
@@ -294,6 +238,7 @@ export function Sidebar() {
 
         {/* Footer — trust badge when expanded, expand control when collapsed */}
         <div className="p-3 border-t border-border shrink-0 space-y-2">
+          <ThemeToggle collapsed={isCollapsed} />
           <a
             href={REPO_URL}
             target="_blank"
@@ -324,55 +269,79 @@ export function Sidebar() {
               <ShieldCheck className="w-4 h-4 text-success-text shrink-0" />
               <div className="leading-tight whitespace-nowrap overflow-hidden">
                 <p className="text-xs font-medium text-foreground">100% local</p>
-                <p className="text-[11px] text-foreground-faint">Nada sale de tu equipo</p>
+                <p className="text-[11px] text-foreground-faint">Tus archivos no salen de aquí</p>
               </div>
             </div>
           )}
         </div>
       </motion.aside>
 
-      {/* Collapsed-rail tooltip (fixed sibling so it isn't clipped by the rail) */}
+      {/* Hover flyout: the category's tools, as a floating panel (fixed sibling so
+          it isn't clipped by the sidebar). Works collapsed and expanded. */}
       <AnimatePresence>
-        {isCollapsed && tip && tipItem && (
+        {flyoutCategory && (
           <motion.div
-            key={tip.id}
+            key={flyoutCategory.id}
+            ref={panelRef}
             initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -6 }}
-            transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
-            style={{ top: tip.top, left: RAIL_WIDTH }}
-            onMouseEnter={clearTipTimer}
-            onMouseLeave={scheduleCloseTip}
-            className="fixed z-60 hidden lg:flex -translate-y-1/2 pl-2"
+            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+            style={{ top: panelTop ?? flyout!.top, left: sidebarWidth }}
+            onMouseEnter={clearFlyoutTimer}
+            onMouseLeave={scheduleCloseFlyout}
+            className={cn(
+              "fixed z-60 hidden max-h-[calc(100dvh-1.5rem)] lg:block pl-2",
+              panelTop === null && "-translate-y-1/2"
+            )}
           >
-            <div className="flex items-stretch rounded-control border border-border-strong bg-surface-strong shadow-lg overflow-hidden">
-              {/* Text part → navigates to the tool */}
+            <div className="flex max-h-[calc(100dvh-1.5rem)] w-64 flex-col overflow-hidden rounded-panel border border-border-strong bg-surface-strong shadow-xl">
+              {/* Header links to the category landing page */}
               <Link
-                href={tipItem.href}
-                onClick={() => { setTip(null); closeOnMobile(); }}
-                className="whitespace-nowrap text-sm font-medium text-foreground px-3 py-2 hover:bg-surface-hover transition-colors focus-visible:outline-none"
+                href={`/${flyoutCategory.id}`}
+                onClick={() => {
+                  setFlyout(null);
+                  closeOnMobile();
+                }}
+                className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2.5 hover:bg-surface-hover transition-colors focus-visible:outline-none"
               >
-                {tipItem.name}
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-foreground">
+                    {flyoutCategory.label}
+                  </span>
+                  <span className="block truncate text-[11px] text-foreground-faint">
+                    {flyoutCategory.tagline}
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-foreground-faint" />
               </Link>
-              {/* Reload part → swaps the link to the counterpart tool */}
-              {tipItem.hasToggle && (
-                <>
-                  <span className="w-px self-stretch bg-border" />
-                  <button
-                    onClick={tipItem.onToggle}
-                    title="Cambiar conversor"
-                    aria-label="Cambiar conversor"
-                    className="flex items-center justify-center w-9 self-stretch text-foreground-faint hover:text-foreground hover:bg-surface-hover transition-colors"
-                  >
-                    <RefreshCw
-                      className={cn(
-                        "w-3.5 h-3.5 transition-transform duration-500",
-                        tipItem.isFlipped && "rotate-180"
-                      )}
-                    />
-                  </button>
-                </>
-              )}
+
+              <ul className="min-h-0 flex-1 overflow-y-auto custom-scrollbar p-1.5">
+                {toolsInCategory(flyoutCategory.id).map((tool) => {
+                  const ToolIcon = TOOL_ICONS[tool.slug] ?? TOOL_FALLBACK_ICON;
+                  const active = pathname === `/${tool.slug}`;
+                  return (
+                    <li key={tool.slug}>
+                      <Link
+                        href={`/${tool.slug}`}
+                        onClick={() => {
+                          setFlyout(null);
+                          closeOnMobile();
+                        }}
+                        className={cn(
+                          "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                          active
+                            ? "bg-surface-hover text-foreground"
+                            : "text-foreground-muted hover:bg-surface-hover hover:text-foreground"
+                        )}
+                      >
+                        <ToolIcon className="h-4 w-4 shrink-0 text-foreground-faint" />
+                        <span className="truncate">{tool.name}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </motion.div>
         )}

@@ -23,7 +23,7 @@ export default function Home() {
 function HomeContent() {
   return (
     <section className="border-t border-border">
-      <div className="mx-auto w-full max-w-4xl px-6 py-14 md:px-10 md:py-20">
+      <div className="mx-auto w-full max-w-6xl px-6 py-10 md:px-10">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
           ¿Por qué importa que no se suban tus archivos?
         </h2>

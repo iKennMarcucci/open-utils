@@ -1,34 +1,49 @@
 import Link from "next/link";
 import { ShieldCheck, Scale } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { ALL_TOOLS } from "@/lib/seo/tools";
+import { toolsInCategory } from "@/lib/seo/tools";
+import { ALL_CATEGORIES } from "@/lib/seo/categories";
 import { GithubIcon } from "@/components/GithubIcon";
 import { REPO_URL } from "@/lib/seo/site";
 
 /**
- * A Server Component now (it was "use client" only to read the pathname and hide
- * itself on the editor routes). It renders on every page, which makes it the
- * site's one complete, crawlable link set: the sidebar derives four of its links
- * from `useState`, so half the tools never appear in the initial HTML there.
+ * A Server Component: it renders on every page, which makes it the site's one
+ * complete, crawlable link set — the sidebar's category flyouts are behind
+ * hover/JS, so the footer is where every tool and category link is guaranteed to
+ * be in the initial HTML. Grouped by category, derived entirely from the single
+ * source, so a new tool appears here automatically.
  */
 export function Footer() {
   return (
     <footer className="border-t border-border bg-background-elevated">
       <div className="mx-auto w-full max-w-6xl px-6 py-10 md:px-10">
         <nav aria-label="Todas las herramientas">
-          <h2 className="ou-label mb-4">Herramientas</h2>
-          <ul className="grid grid-cols-2 gap-x-6 gap-y-2.5 sm:grid-cols-3 lg:grid-cols-5">
-            {ALL_TOOLS.map((tool) => (
-              <li key={tool.slug}>
-                <Link
-                  href={`/${tool.slug}`}
-                  className="text-sm text-foreground-subtle hover:text-foreground transition-colors"
-                >
-                  {tool.name}
-                </Link>
-              </li>
+          <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-3">
+            {ALL_CATEGORIES.map((category) => (
+              <div key={category.id}>
+                <h2 className="mb-3">
+                  <Link
+                    href={`/${category.id}`}
+                    className="ou-label hover:text-foreground transition-colors"
+                  >
+                    {category.label}
+                  </Link>
+                </h2>
+                <ul className="space-y-2.5">
+                  {toolsInCategory(category.id).map((tool) => (
+                    <li key={tool.slug}>
+                      <Link
+                        href={`/${tool.slug}`}
+                        className="text-sm text-foreground-subtle hover:text-foreground transition-colors"
+                      >
+                        {tool.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         </nav>
 
         <div className="mt-10 flex flex-col gap-6 border-t border-border pt-8 md:flex-row md:items-center md:justify-between">
@@ -43,10 +58,10 @@ export function Footer() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="ou-badge">
-              <ShieldCheck className="h-3 w-3 text-success-text" />
-              100% local
-            </span>
+            <Link href="/privacidad" className="ou-pill">
+              <ShieldCheck className="h-3.5 w-3.5 text-success-text" />
+              Privacidad
+            </Link>
             <a
               href={`${REPO_URL}/blob/main/LICENSE`}
               target="_blank"
@@ -80,6 +95,27 @@ export function Footer() {
             GitHub
           </a>
           .
+        </p>
+        <p className="mt-3 text-xs text-foreground-faint leading-relaxed">
+          Las herramientas de vídeo usan{" "}
+          <a
+            href="https://github.com/ffmpegwasm/ffmpeg.wasm"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline-offset-4 hover:text-foreground hover:underline"
+          >
+            FFmpeg.wasm
+          </a>
+          , una compilación de FFmpeg con licencia{" "}
+          <a
+            href="https://www.ffmpeg.org/legal.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline-offset-4 hover:text-foreground hover:underline"
+          >
+            LGPL-2.1
+          </a>{" "}
+          que se ejecuta íntegramente en tu navegador.
         </p>
       </div>
     </footer>
