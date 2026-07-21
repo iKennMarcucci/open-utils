@@ -197,7 +197,7 @@ export function Sidebar() {
 
   /** Results grouped by category, or the informative empty/no-match message. */
   const searchResults = (
-    <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar p-1.5">
+    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto custom-scrollbar p-2">
       {!hasQuery ? (
         <p className="px-3 py-6 text-center text-xs leading-relaxed text-foreground-faint">
           Escribe para buscar entre las herramientas.
@@ -214,7 +214,7 @@ export function Sidebar() {
       ) : (
         groups.map((group) => (
           <div key={group.category}>
-            <p className="ou-label px-2.5 pt-2 pb-1">{group.label}</p>
+            <p className="ou-label px-2.5 pb-1.5">{group.label}</p>
             <ul>
               {group.tools.map((tool) => {
                 const ToolIcon = TOOL_ICONS[tool.slug] ?? TOOL_FALLBACK_ICON;
